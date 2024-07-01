@@ -1,8 +1,17 @@
-import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
-import Footer from "./Footer";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 const Slots = ({ navigation }) => {
+  const [showEditOptions, setShowEditOptions] = useState(false);
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState(null);
+
   const bookedSlots = [
     {
       slot: "8:00 AM",
@@ -16,39 +25,47 @@ const Slots = ({ navigation }) => {
       department: "HR",
       mobile: "9876543210",
     },
-    {
-      slot: "12:00 PM",
-      name: "Jane Smith",
-      department: "IT",
-      mobile: "9898989898",
-    },
-    {
-      slot: "2:00 PM",
-      name: "Alice Johnson",
-      department: "Finance",
-      mobile: "9876543210",
-    },
   ];
 
+  const handleEditPress = (index) => {
+    // Implement your edit logic here
+    console.log("Edit clicked for slot:", bookedSlots[index]);
+    // Example: Navigate to edit screen or show modal for editing
+  };
+
   return (
-    <>
-      <View style={styles.container}>
-        <Text style={styles.title}>Booked Slots</Text>
-        <ScrollView>
-          {bookedSlots.map((slot, index) => (
-            <View key={index} style={styles.card}>
-              <Text style={styles.slotText}>Time: {slot.slot}</Text>
-              <Text style={styles.detailText}>Name: {slot.name}</Text>
-              <Text style={styles.detailText}>
-                Department: {slot.department}
+    <View style={styles.container}>
+      <Text style={styles.title}>Booked Slots</Text>
+      <ScrollView>
+        {bookedSlots.map((slot, index) => (
+          <View key={index} style={styles.card}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => {
+                setSelectedSlotIndex(index);
+                setShowEditOptions(!showEditOptions);
+              }}
+            >
+              <Text
+                style={{
+                  backgroundColor: "#007367",
+                  padding: 10,
+                  borderRadius: 10,
+                  color: "#ffff",
+                }}
+              >
+                Update
               </Text>
-              <Text style={styles.detailText}>Mobile: {slot.mobile}</Text>
-            </View>
-          ))}
-        </ScrollView>
-      </View>
-      {/* <Footer navigation={navigation} /> */}
-    </>
+            </TouchableOpacity>
+
+            <Text style={styles.slotText}>Time: {slot.slot}</Text>
+            <Text style={styles.detailText}>Name: {slot.name}</Text>
+            <Text style={styles.detailText}>Department: {slot.department}</Text>
+            <Text style={styles.detailText}>Mobile: {slot.mobile}</Text>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 };
 
@@ -71,6 +88,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     elevation: 2,
+    position: "relative",
   },
   slotText: {
     fontSize: 18,
@@ -80,6 +98,27 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 16,
     marginBottom: 5,
+  },
+  editButton: {
+    position: "absolute",
+    top: 20,
+    right: 10,
+  },
+  editOptions: {
+    position: "absolute",
+    top: 40,
+    right: 10,
+    backgroundColor: "#fff",
+    borderRadius: 5,
+    elevation: 3,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
 });
 

@@ -57,7 +57,7 @@ const Help = ({ navigation }) => {
           <Text style={styles.contactDetail}>Phone: (123) 456-7890</Text>
         </View>
       </ScrollView>
-      <Footer navigation={navigation} />
+      {/* <Footer navigation={navigation} /> */}
     </>
   );
 };

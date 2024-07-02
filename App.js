@@ -40,7 +40,7 @@ export default function App() {
           />
 
           <Stack.Screen
-            name="Schedule"
+            name="Schedules"
             component={HomeScreen}
             options={{ headerShown: true }}
           />

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -6,61 +6,52 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 
-const Slots = ({ navigation }) => {
-  const [showEditOptions, setShowEditOptions] = useState(false);
-  const [selectedSlotIndex, setSelectedSlotIndex] = useState(null);
+const Slots = ({ route, navigation }) => {
+  const {
+    data = [
+      {
+        location: "GYM",
+        name: "Cameron Williams",
+        date: "23/32/322",
+        slot: "8:00AM",
+        dept: "CATS",
+        mobile: "132-32323665",
+      },
+    ],
+  } = route.params || {};
 
-  const bookedSlots = [
-    {
-      slot: "8:00 AM",
-      name: "Cameron Williams",
-      department: "CATS",
-      mobile: "9898457548",
-    },
-    {
-      slot: "10:00 AM",
-      name: "John Doe",
-      department: "HR",
-      mobile: "9876543210",
-    },
-  ];
+  const isBefore6PM = () => {
+    const now = new Date();
+    const sixPM = new Date();
+    sixPM.setHours(18, 0, 0);
 
-  const handleEditPress = (index) => {
-    // Implement your edit logic here
-    console.log("Edit clicked for slot:", bookedSlots[index]);
-    // Example: Navigate to edit screen or show modal for editing
+    return now < sixPM;
+  };
+
+  const handleUpdatePress = () => {
+    console.log("Navigating to Schedules");
+    navigation.navigate("Schedules");
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Booked Slots</Text>
       <ScrollView>
-        {bookedSlots.map((slot, index) => (
+        {data?.map((slot, index) => (
           <View key={index} style={styles.card}>
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={() => {
-                setSelectedSlotIndex(index);
-                setShowEditOptions(!showEditOptions);
-              }}
-            >
-              <Text
-                style={{
-                  backgroundColor: "#007367",
-                  padding: 10,
-                  borderRadius: 10,
-                  color: "#ffff",
-                }}
+            {isBefore6PM() && (
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={handleUpdatePress}
               >
-                Update
-              </Text>
-            </TouchableOpacity>
-
+                <Text style={styles.updateText}>Update</Text>
+              </TouchableOpacity>
+            )}
             <Text style={styles.slotText}>Time: {slot.slot}</Text>
             <Text style={styles.detailText}>Name: {slot.name}</Text>
-            <Text style={styles.detailText}>Department: {slot.department}</Text>
+            <Text style={styles.detailText}>Location: {slot.location}</Text>
+            <Text style={styles.detailText}>Department: {slot.dept}</Text>
             <Text style={styles.detailText}>Mobile: {slot.mobile}</Text>
           </View>
         ))}
@@ -104,21 +95,12 @@ const styles = StyleSheet.create({
     top: 20,
     right: 10,
   },
-  editOptions: {
-    position: "absolute",
-    top: 40,
-    right: 10,
-    backgroundColor: "#fff",
-    borderRadius: 5,
-    elevation: 3,
+  updateText: {
+    backgroundColor: "#007367",
     padding: 10,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    fontSize: 16,
+    borderRadius: 10,
+    color: "#ffff",
   },
 });
 

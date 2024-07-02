@@ -43,7 +43,10 @@ const Profile = ({ navigation }) => {
           alignItems: "stretch",
         }}
       >
-        <TouchableOpacity style={styles.list}>
+        <TouchableOpacity
+          style={styles.list}
+          onPress={() => navigation.navigate("Profile")}
+        >
           <View style={styles.listContent}>
             <Ionicons
               name="person-circle-outline"
@@ -61,7 +64,10 @@ const Profile = ({ navigation }) => {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.list}>
+        <TouchableOpacity
+          style={styles.list}
+          onPress={() => navigation.navigate("Help")}
+        >
           <View style={styles.listContent}>
             <Ionicons
               name="information-circle-outline"

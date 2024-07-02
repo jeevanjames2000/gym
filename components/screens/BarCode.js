@@ -15,7 +15,7 @@ const BarCode = ({ navigation }) => {
         />
         {}
       </View>
-      <Footer navigation={navigation} />
+      {/* <Footer navigation={navigation} /> */}
     </>
   );
 };
@@ -37,8 +37,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   barcodeImage: {
-    height: 300,
-    width: 400,
+    height: 400,
+    width: "100%",
     marginBottom: 20,
   },
   subText: {

@@ -27,7 +27,7 @@ const LoginScreen = ({ navigation }) => {
     <View style={styles.container}>
       <View style={styles.imageContainer}>
         <Image
-          source={require("../../assets/websiteplanet-dummy-356X356.png")}
+          source={require("../../assets/vecteezy_the-cheerful-healthy-people-run-for-exercise-happily-with_35041939.png")}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -73,13 +73,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 20,
+    backgroundColor: "#f2f2f2", // optional: to give a background color
   },
   imageContainer: {
     flex: 1,
+    backgroundColor: "transparent",
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
+    marginBottom: 0,
   },
-  logo: {},
+  logo: {
+    width: "100%",
+    height: 400,
+    backgroundColor: "transparent",
+  },
   formContainer: {
     width: "100%",
     alignItems: "center",

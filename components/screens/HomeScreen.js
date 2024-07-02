@@ -101,8 +101,18 @@ const HomeScreen = ({ navigation = {} }) => {
   };
 
   const handleScanner = () => {
+    const data = [
+      {
+        location: value,
+        name: "Cameron Williams",
+        date: selectedDate.toISOString(),
+        slot: selectedTime,
+        dept: "CATS",
+        mobile: "132-32323665",
+      },
+    ];
     setSlotConfirmationVisible(false);
-    navigation.navigate("Slots");
+    navigation.navigate("Slots", { data });
   };
 
   const renderTimeSlots = () => {
@@ -125,18 +135,18 @@ const HomeScreen = ({ navigation = {} }) => {
         >
           {slot.time}
         </Text>
-        {slot.booked ? (
+        {/* {slot.booked ? (
           <TouchableOpacity style={styles.updateButton}>
             <Text style={styles.updateButtonText}>Update</Text>
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.confirmButton}
-            onPress={() => handleTimeSlotSelect(slot)}
-          >
-            <Text style={styles.checkmark}>✓</Text>
-          </TouchableOpacity>
-        )}
+        ) : ( */}
+        <TouchableOpacity
+          style={styles.confirmButton}
+          onPress={() => handleTimeSlotSelect(slot)}
+        >
+          <Text style={styles.checkmark}>✓</Text>
+        </TouchableOpacity>
+        {/* )} */}
       </TouchableOpacity>
     ));
   };
@@ -317,7 +327,7 @@ const HomeScreen = ({ navigation = {} }) => {
           </TouchableOpacity>
         </Modal>
       </View>
-      <Footer navigation={navigation} />
+      {/* <Footer navigation={navigation} /> */}
     </>
   );
 };

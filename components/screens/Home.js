@@ -34,7 +34,7 @@ const Home = ({ navigation }) => {
           <View style={styles.iconsContainer}>
             <TouchableOpacity
               style={styles.iconWrapper}
-              onPress={() => handleNavigate("Schedule")}
+              onPress={() => handleNavigate("Schedules")}
             >
               <Ionicons
                 name="timer-outline"
@@ -160,6 +160,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginTop: -50,
     padding: 10,
+    paddingBottom: 15,
     borderRadius: 10,
     shadowColor: "#000",
     shadowOffset: {

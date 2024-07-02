@@ -112,7 +112,7 @@ const HomeScreen = ({ navigation = {} }) => {
       },
     ];
     setSlotConfirmationVisible(false);
-    navigation.navigate("Slots", { data });
+    navigation.navigate("Booked Slots", { data });
   };
 
   const renderTimeSlots = () => {

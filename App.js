@@ -56,12 +56,12 @@ export default function App() {
             options={{ headerShown: true }}
           />
           <Stack.Screen
-            name="Slots"
+            name="Booked Slots"
             component={Slots}
             options={{ headerShown: true }}
           />
           <Stack.Screen
-            name="Help"
+            name="Help Center"
             component={Help}
             options={{ headerShown: true }}
           />

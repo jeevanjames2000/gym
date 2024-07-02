@@ -48,7 +48,7 @@ const Home = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.iconWrapper}
-              onPress={() => handleNavigate("Slots")}
+              onPress={() => handleNavigate("Booked Slots")}
             >
               <Ionicons
                 name="list"
@@ -90,7 +90,7 @@ const Home = ({ navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.iconWrapper}
-              onPress={() => handleNavigate("Help")}
+              onPress={() => handleNavigate("Help Center")}
             >
               <Ionicons
                 name="information-circle-outline"

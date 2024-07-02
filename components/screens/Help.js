@@ -36,9 +36,9 @@ const Help = ({ navigation }) => {
   return (
     <>
       <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
+        {/* <View style={styles.header}>
           <Text style={styles.headerText}>Help Center</Text>
-        </View>
+        </View> */}
         <View style={styles.faqContainer}>
           {faqs.map((faq, index) => (
             <View key={index} style={styles.faq}>
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   contactHeader: {
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: "bold",
     color: "#007367",
     marginBottom: 10,
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   contactDetail: {
-    fontSize: 16,
+    fontSize: 18,
     color: "#007367",
     marginBottom: 5,
   },

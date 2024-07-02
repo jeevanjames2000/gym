@@ -66,7 +66,7 @@ const Profile = ({ navigation }) => {
 
         <TouchableOpacity
           style={styles.list}
-          onPress={() => navigation.navigate("Help")}
+          onPress={() => navigation.navigate("Help Center")}
         >
           <View style={styles.listContent}>
             <Ionicons

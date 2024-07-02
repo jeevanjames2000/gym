@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -35,8 +35,8 @@ const Slots = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Booked Slots</Text>
-      <ScrollView>
+      {/* <Text style={styles.title}>Booked Slots</Text> */}
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
         {data?.map((slot, index) => (
           <View key={index} style={styles.card}>
             {isBefore6PM() && (
@@ -62,13 +62,17 @@ const Slots = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    padding: 20,
+    backgroundColor: "#f0f0f0", // Add a background color for better visibility
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+    marginLeft: 10,
+  },
+  scrollViewContent: {
+    paddingBottom: 20,
   },
   card: {
     backgroundColor: "#fff",
@@ -92,14 +96,15 @@ const styles = StyleSheet.create({
   editButton: {
     position: "absolute",
     top: 20,
-    right: 10,
+    right: 20,
   },
   updateText: {
     backgroundColor: "#007367",
-    padding: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     fontSize: 16,
     borderRadius: 10,
-    color: "#ffff",
+    color: "#fff",
   },
 });
 

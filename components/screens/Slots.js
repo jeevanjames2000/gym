@@ -30,7 +30,6 @@ const Slots = ({ route, navigation }) => {
   };
 
   const handleUpdatePress = () => {
-    console.log("Navigating to Schedules");
     navigation.navigate("Schedules");
   };
 

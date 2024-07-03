@@ -23,6 +23,7 @@ const LoginScreen = ({ navigation }) => {
       Alert.alert("Access Denied", "Contact Admin For GYM Access");
     }
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>

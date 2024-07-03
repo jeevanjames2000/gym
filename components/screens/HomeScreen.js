@@ -12,7 +12,6 @@ import {
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
-import Footer from "./Footer";
 
 const timeSlots = [
   "6:00 AM",
@@ -35,12 +34,33 @@ const HomeScreen = ({ navigation = {} }) => {
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("GYM");
-  const [items, setItems] = useState([{ label: "GYM", value: "GYM" }]);
+  const [items, setItems] = useState([
+    { label: "GYM", value: "GYM" },
+    { label: "Block-C", value: "Block-C" },
+    { label: "Girls Hostel", value: "Girls Hostel" },
+    { label: "Campus", value: "Campus" },
+  ]);
+
   const [isModalVisible, setModalVisible] = useState(false);
   const [bookedSlots, setBookedSlots] = useState([]);
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
   const [minDate, setMinDate] = useState(new Date());
+
+  const fetchGymSchedules = async (location) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/gym/getGymSchedulesByLocation/${items}`
+      );
+      const data = await response.json();
+      setAvailableTimeSlots(data.schedules);
+    } catch (error) {
+      console.error("Error fetching gym schedules:", error);
+    }
+  };
+
+  // useEffect(() => {
+  // }, [value]);
 
   useEffect(() => {
     const filterTimeSlots = () => {
@@ -64,6 +84,7 @@ const HomeScreen = ({ navigation = {} }) => {
         };
       });
     };
+    // fetchGymSchedules(value);
     setAvailableTimeSlots(filterTimeSlots());
   }, [bookedSlots]);
 
@@ -135,11 +156,6 @@ const HomeScreen = ({ navigation = {} }) => {
         >
           {slot.time}
         </Text>
-        {/* {slot.booked ? (
-          <TouchableOpacity style={styles.updateButton}>
-            <Text style={styles.updateButtonText}>Update</Text>
-          </TouchableOpacity>
-        ) : ( */}
         <TouchableOpacity
           style={styles.confirmButton}
           onPress={() => handleTimeSlotSelect(slot)}
@@ -172,6 +188,7 @@ const HomeScreen = ({ navigation = {} }) => {
                 is24Hour={true}
                 display="default"
                 onChange={handleDateChange}
+                minimumDate={new Date()}
               />
             )}
           </View>
@@ -185,6 +202,9 @@ const HomeScreen = ({ navigation = {} }) => {
               setValue={setValue}
               setItems={setItems}
               style={styles.dropdown}
+              containerStyle={styles.dropdownContainerStyle}
+              labelStyle={styles.dropdownLabel}
+              textStyle={styles.dropdownText}
             />
           </View>
         </View>

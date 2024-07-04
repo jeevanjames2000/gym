@@ -31,6 +31,7 @@ const HomeScreen = ({ navigation = {} }) => {
   const [selectedTime, setSelectedTime] = useState(null);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("GYM");
@@ -51,7 +52,7 @@ const HomeScreen = ({ navigation = {} }) => {
   const fetchGymSchedules = async (location) => {
     try {
       const response = await fetch(
-        `https://g-gym-backend.onrender.com/slot/gym/getGymSchedulesByLocation/${"Location"}/$date`
+        `http://localhost:3000/slot/gym/getGymSchedulesByLocation/${value}/${selectedDate.toLocaleDateString()}`
       );
       const data = await response.json();
       setMinDate(data);

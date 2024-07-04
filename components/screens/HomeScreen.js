@@ -46,14 +46,15 @@ const HomeScreen = ({ navigation = {} }) => {
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
   const [minDate, setMinDate] = useState(new Date());
+  console.log("minDate: ", minDate);
 
   const fetchGymSchedules = async (location) => {
     try {
       const response = await fetch(
-        `http://localhost:3000/api/gym/getGymSchedulesByLocation/${items}`
+        `https://g-gym-backend.onrender.com/slot/gym/getGymSchedulesByLocation/${"Location"}/$date`
       );
       const data = await response.json();
-      setAvailableTimeSlots(data.schedules);
+      setMinDate(data);
     } catch (error) {
       console.error("Error fetching gym schedules:", error);
     }
@@ -84,7 +85,7 @@ const HomeScreen = ({ navigation = {} }) => {
         };
       });
     };
-    // fetchGymSchedules(value);
+    fetchGymSchedules(value);
     setAvailableTimeSlots(filterTimeSlots());
   }, [bookedSlots]);
 

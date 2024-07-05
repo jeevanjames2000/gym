@@ -8,6 +8,7 @@ import {
   Modal,
   Image,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -30,6 +31,7 @@ const timeSlots = [
 const HomeScreen = ({ navigation = {} }) => {
   const [selectedTime, setSelectedTime] = useState(null);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const [datePickerVisible, setDatePickerVisible] = useState(false);
@@ -46,50 +48,91 @@ const HomeScreen = ({ navigation = {} }) => {
   const [bookedSlots, setBookedSlots] = useState([]);
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
-  const [minDate, setMinDate] = useState(new Date());
-  console.log("minDate: ", minDate);
+  const [slotsdata, setSlotsData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const fetchGymSchedules = async (location) => {
+  const onDateChange = (event, date) => {
+    const currentDate = date || selectedDate;
+    setSelectedDate(currentDate);
+
+    hideDatePicker();
+  };
+  const fetchGymSchedules = async (location, date) => {
     try {
+      setIsLoading(true);
+      setError(false);
+      const formattedDate = date.toISOString().split("T")[0];
       const response = await fetch(
-        `http://localhost:3000/slot/gym/getGymSchedulesByLocation/${value}/${selectedDate.toLocaleDateString()}`
+        `https://g-gym-backend.onrender.com/slot/gym/getGymSchedulesByLocationMongo/${location}/${formattedDate}`
       );
       const data = await response.json();
-      setMinDate(data);
+      const filter = data.filteredData;
+      if (filter.length === 0) {
+        setError(true);
+      } else {
+        const slots = filter.map((slot) => ({
+          ...slot,
+          time: slot.start_time,
+          endTime: slot.end_time,
+          available: slot.available,
+          Location: slot.Location,
+          occupied: slot.occupied,
+          disabled: new Date(slot.start_time) <= new Date(),
+          booked: bookedSlots.includes(slot.start_time),
+        }));
+        setSlotsData(slots);
+      }
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error fetching gym schedules:", error);
+      setIsLoading(false);
+      setError(true);
     }
   };
 
-  // useEffect(() => {
-  // }, [value]);
+  useEffect(() => {
+    fetchGymSchedules(value, selectedDate);
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        setIsLoading(false);
+        setError(true);
+      }
+    }, 10000);
+
+    return () => clearTimeout(timeout);
+  }, [value, selectedDate]);
 
   useEffect(() => {
     const filterTimeSlots = () => {
       const currentTime = new Date();
-      return timeSlots.map((slot) => {
-        const [time, modifier] = slot.split(" ");
-        let [hours, minutes] = time.split(":");
+      return slotsdata.map((slot) => {
+        const slotTimeParts = slot.start_time.split(" ");
+        let [hours, minutes] = slotTimeParts[0].split(":");
+        const modifier = slotTimeParts[1];
+
         hours = parseInt(hours);
         minutes = parseInt(minutes);
+
         if (modifier === "PM" && hours !== 12) {
           hours += 12;
         } else if (modifier === "AM" && hours === 12) {
           hours = 0;
         }
-        const slotTime = new Date();
+
+        const slotTime = new Date(currentTime);
         slotTime.setHours(hours, minutes, 0, 0);
+
         return {
-          time: slot,
+          ...slot,
+          end_time: slot.end_time,
           disabled: slotTime <= currentTime,
-          booked: bookedSlots.includes(slot),
+          booked: bookedSlots.includes(slot.start_time),
         };
       });
     };
-    fetchGymSchedules(value);
-    setAvailableTimeSlots(filterTimeSlots());
-  }, [bookedSlots]);
 
+    setAvailableTimeSlots(filterTimeSlots());
+  }, [slotsdata, bookedSlots]);
   const showDatePicker = () => {
     setDatePickerVisible(true);
   };
@@ -98,18 +141,20 @@ const HomeScreen = ({ navigation = {} }) => {
     setDatePickerVisible(false);
   };
 
-  const handleDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setSelectedDate(currentDate);
-    hideDatePicker();
+  const handleValueChange = (newValue) => {
+    setValue(newValue);
+    fetchGymSchedules(newValue, selectedDate);
   };
 
   const closeModal = () => {
     setModalVisible(false);
   };
 
+  const [slottime, setSlotTime] = useState([]);
+
   const handleTimeSlotSelect = (slot) => {
     if (!slot.disabled) {
+      setSlotTime(slot);
       setSelectedTime(slot.time);
       setModalVisible(true);
     }
@@ -137,7 +182,6 @@ const HomeScreen = ({ navigation = {} }) => {
     setSlotConfirmationVisible(false);
     navigation.navigate("Booked Slots", { data });
   };
-
   const renderTimeSlots = () => {
     return availableTimeSlots.map((slot) => (
       <TouchableOpacity
@@ -149,22 +193,18 @@ const HomeScreen = ({ navigation = {} }) => {
             borderColor: selectedTime === slot.time ? "#007367" : "#000",
             backgroundColor:
               selectedTime === slot.time ? "#007367" : "transparent",
+            opacity: slot.disabled ? 0.5 : 1,
           },
         ]}
         disabled={slot.disabled}
       >
-        <Text
-          style={[styles.slotText, { color: slot.disabled ? "#ccc" : "#000" }]}
-        >
-          {slot.time}
-        </Text>
+        <Text style={styles.slotText}>{slot.time}</Text>
         <TouchableOpacity
           style={styles.confirmButton}
           onPress={() => handleTimeSlotSelect(slot)}
         >
           <Text style={styles.checkmark}>✓</Text>
         </TouchableOpacity>
-        {/* )} */}
       </TouchableOpacity>
     ));
   };
@@ -189,7 +229,7 @@ const HomeScreen = ({ navigation = {} }) => {
                 mode="date"
                 is24Hour={true}
                 display="default"
-                onChange={handleDateChange}
+                onChange={onDateChange}
                 minimumDate={new Date()}
               />
             )}
@@ -207,14 +247,27 @@ const HomeScreen = ({ navigation = {} }) => {
               containerStyle={styles.dropdownContainerStyle}
               labelStyle={styles.dropdownLabel}
               textStyle={styles.dropdownText}
+              onChangeValue={handleValueChange}
             />
           </View>
         </View>
         <View style={styles.timeSlots}>
           <Text style={styles.title}>Select Time Slots</Text>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {renderTimeSlots()}
-          </ScrollView>
+
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007367" />
+              <Text>Loading</Text>
+            </View>
+          ) : error ? (
+            <Text style={{ flex: 1, fontSize: 13, fontWeight: "bold" }}>
+              No gym schedules found for the specified location and date
+            </Text>
+          ) : (
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {renderTimeSlots()}
+            </ScrollView>
+          )}
         </View>
 
         <Modal
@@ -265,15 +318,6 @@ const HomeScreen = ({ navigation = {} }) => {
                         {selectedDate.toLocaleDateString()}
                       </Text>
                     </View>
-                    <View style={styles.detailItem}>
-                      <Ionicons
-                        name="time-outline"
-                        size={24}
-                        color="#3498db"
-                        style={styles.icon}
-                      />
-                      <Text style={styles.detailText}>{selectedTime}</Text>
-                    </View>
 
                     <View style={styles.detailItem}>
                       <Ionicons
@@ -282,22 +326,38 @@ const HomeScreen = ({ navigation = {} }) => {
                         color="#3498db"
                         style={styles.icon}
                       />
-                      <Text style={styles.detailText}>Available: {"45"}</Text>
+                      <Text style={styles.detailText}>
+                        Available: {slottime.available}
+                      </Text>
                     </View>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        margin: 5,
-                      }}
-                    >
+                    <View style={styles.detailItem}>
                       <Ionicons
                         name="lock-closed-outline"
                         size={24}
                         color="#3498db"
                         style={styles.icon}
                       />
-                      <Text style={styles.detailText}>Occupied: {"8"}</Text>
+                      <Text style={styles.detailText}>
+                        Occupied: {slottime.occupied}
+                      </Text>
+                    </View>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginBottom: 15,
+                        width: "55%",
+                      }}
+                    >
+                      <Ionicons
+                        name="time-outline"
+                        size={24}
+                        color="#3498db"
+                        style={styles.icon}
+                      />
+                      <Text style={styles.detailText}>
+                        {selectedTime} - {slottime.end_time}
+                      </Text>
                     </View>
                   </View>
                   <View
@@ -438,7 +498,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
-    width: "80%",
+    width: "85%",
     maxHeight: "80%",
   },
   modalContent: {
@@ -474,7 +534,7 @@ const styles = StyleSheet.create({
   detailItem: {
     flexDirection: "row",
     alignItems: "center",
-    margin: 5,
+    marginBottom: 10,
     width: "45%",
   },
   detailText: {
@@ -525,6 +585,13 @@ const styles = StyleSheet.create({
   okButtonText: {
     fontSize: 16,
     color: "#fff",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+
+    padding: 20,
+    alignItems: "center",
   },
 });
 export default HomeScreen;

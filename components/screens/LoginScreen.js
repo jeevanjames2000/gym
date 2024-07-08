@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -11,17 +11,41 @@ import {
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const LoginScreen = ({ navigation }) => {
-  const [username, setUsername] = useState("hosteler");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("1234");
   const [role, setRole] = useState(null);
-  const handleLogin = () => {
-    if (username === "hosteler" && password === "1234") {
-      setRole("hostler");
-      navigation.navigate("Home");
-    } else {
-      Alert.alert("Access Denied", "Contact Admin For GYM Access");
+
+  const [storedValue, setStoredValue] = useState("");
+
+  useEffect(() => {
+    // Retrieve stored data on component mount
+    const fetchData = async () => {
+      const value = await AsyncStorage.getItem("myKey");
+      if (value !== null) {
+        console.log("setStoredValue(value);: ", value);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const storeData = async () => {
+    try {
+      await AsyncStorage.setItem("myKey", username);
+    } catch (e) {
+      console.error("Failed to store data", e);
     }
+  };
+  const handleLogin = () => {
+    // if (username === "hosteler" && password === "1234") {
+    storeData();
+    setRole("hostler");
+    navigation.navigate("Home");
+    // } else {
+    //   Alert.alert("Access Denied", "Contact Admin For GYM Access");
+    // }
   };
 
   return (

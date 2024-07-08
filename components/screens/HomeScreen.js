@@ -13,6 +13,7 @@ import {
 import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const timeSlots = [
   "6:00 AM",
@@ -30,6 +31,7 @@ const timeSlots = [
 
 const HomeScreen = ({ navigation = {} }) => {
   const [selectedTime, setSelectedTime] = useState(null);
+
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -64,10 +66,11 @@ const HomeScreen = ({ navigation = {} }) => {
       setError(false);
       const formattedDate = date.toISOString().split("T")[0];
       const response = await fetch(
-        `https://g-gym-backend.onrender.com/slot/gym/getGymSchedulesByLocationMongo/${location}/${formattedDate}`
+        `https://g-gym-backend.onrender.com/api/gym/getGymSchedulesByLocationMongo/${location}/${formattedDate}`
       );
       const data = await response.json();
       const filter = data.filteredData;
+
       if (filter.length === 0) {
         setError(true);
       } else {
@@ -89,6 +92,17 @@ const HomeScreen = ({ navigation = {} }) => {
       setError(true);
     }
   };
+
+  const [storage, setStorage] = useState(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const value = await AsyncStorage.getItem("myKey");
+      if (value !== null) {
+        setStorage(value);
+      }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     fetchGymSchedules(value, selectedDate);
@@ -160,9 +174,46 @@ const HomeScreen = ({ navigation = {} }) => {
     }
   };
 
-  const handleBookSlot = () => {
+  const handleBookSlot = async () => {
     closeModal();
     if (selectedTime && !bookedSlots.includes(selectedTime)) {
+      const apiUrl =
+        "https://g-gym-backend.onrender.com/slot/gym/insertGymMasterSchedulingMongo";
+
+      const bookingData = {
+        Gym_scheduling_id: "V1",
+        regdNo: storage.regdNo,
+        start_date: formattedDate,
+        start_time: slottime.start_time,
+        end_time: slottime.end_time,
+        end_date: slottime.end_date,
+        generated_by: "Cats",
+        generated_time: "2024-07-08T05:36:16.748Z",
+        Access_type: "All",
+        Location: slottime.location,
+        campus: "VSP",
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bookingData),
+        });
+
+        const responseData = await response.json();
+
+        if (!response.ok) {
+          throw new Error(responseData.message || "Failed to book slot");
+        }
+
+        console.log("Booking response:", responseData);
+      } catch (error) {
+        console.error("Error booking slot:", error.message);
+        Alert.alert("Error", error.message || "Failed to book slot");
+      }
       setBookedSlots([...bookedSlots, selectedTime]);
       setSlotConfirmationVisible(true);
     }

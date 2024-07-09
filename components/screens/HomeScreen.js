@@ -37,7 +37,6 @@ const HomeScreen = ({ navigation = {} }) => {
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
   const [slotsdata, setSlotsData] = useState([]);
-  const [fullData, setFullData] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -59,7 +58,6 @@ const HomeScreen = ({ navigation = {} }) => {
         `https://g-gym-backend.onrender.com/slot/gym/getGymSchedulesByLocationMongo/${location}/${formattedDate}`
       );
       const data = await response.json();
-      console.log("data: ", data);
 
       if (data.length === 0) {
         setError(true);
@@ -158,10 +156,8 @@ const HomeScreen = ({ navigation = {} }) => {
   };
 
   const [slottime, setSlotTime] = useState([]);
-  console.log("slottime: ", slottime);
 
   const handleTimeSlotSelect = (slot) => {
-    // console.log("slot: ", slot);
     if (!slot.disabled) {
       setSlotTime(slot);
       setSelectedTime(slot.time);
@@ -209,17 +205,13 @@ const HomeScreen = ({ navigation = {} }) => {
           setResLoading(false);
           setBookedSlots([...bookedSlots, selectedTime]);
           setSlotConfirmationVisible(true);
-          console.log("Booking response:", responseData);
           setStoreErr(responseData);
         } else {
           setResLoading(false);
           setStoreErr(responseData);
-
-          console.log("Error", responseData.message || "Failed to book slot");
         }
       } catch (error) {
         setResLoading(false);
-
         Alert.alert("Error", "Failed to book slot");
       }
     }
@@ -237,7 +229,7 @@ const HomeScreen = ({ navigation = {} }) => {
       },
     ];
     setSlotConfirmationVisible(false);
-    navigation.navigate("Booked Slots", { data });
+    navigation.navigate("BarCode", { data });
   };
   const renderTimeSlots = () => {
     return availableTimeSlots.map((slot) => (

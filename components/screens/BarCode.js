@@ -1,50 +1,82 @@
-import React from "react";
-import { View, Text, StyleSheet, ImageBackground, Image } from "react-native";
-import Footer from "./Footer";
-const BarCode = ({ navigation }) => {
-  const backgroundImageUri =
-    "https://images.unsplash.com/photo-1560272551-034aee57a87e";
-  return (
-    <>
-      <View style={styles.container}>
-        {}
-        <Image
-          source={require("../../assets/websiteplanet-dummy-356X356 (1).png")}
-          style={styles.barcodeImage}
-          resizeMode="contain"
-        />
-        {}
-      </View>
-      {/* <Footer navigation={navigation} /> */}
-    </>
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, Image } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const BarCode = ({ route, navigation }) => {
+  const [slotsdata, setSlotsData] = useState([]);
+  const [storage, setStorage] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const value = await AsyncStorage.getItem("myKey");
+      if (value !== null) {
+        setStorage(value);
+      }
+    };
+    fetchData();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchGymSchedules = async () => {
+        try {
+          if (storage) {
+            const response = await fetch(
+              `https://g-gym-backend.onrender.com/slot/gym/getGymBookingsByRegdNo/${storage}`
+            );
+            const data = await response.json();
+     
+
+            const currentDate = new Date().toISOString().split("T")[0];
+            const filteredData = data.filter(
+              (item) =>
+                new Date(item.start_date).toISOString().split("T")[0] ===
+                currentDate
+            );
+
+            if (filteredData.length > 0) {
+              setSlotsData(filteredData[0]);
+            } else {
+              setSlotsData(null);
+            }
+          }
+        } catch (error) {}
+      };
+
+      fetchGymSchedules();
+    }, [storage])
   );
+
+  const renderQRCodeImage = () => {
+    return (
+      <View>
+        <Image
+          style={styles.logo}
+          source={{
+            uri: slotsdata.qr_code,
+          }}
+        />
+      </View>
+    );
+  };
+
+  return <View style={styles.container}>{renderQRCodeImage()}</View>;
 };
+
 const styles = StyleSheet.create({
   container: {
-    justifyContent: "center",
-    flex: 1,
-  },
-  overlay: {
-    backgroundColor: "rgba(0,0,0,0.5)",
-    padding: 20,
-    borderRadius: 10,
+    paddingTop: 50,
     alignItems: "center",
   },
-  headerText: {
-    fontSize: 28,
-    color: "#fff",
-    fontWeight: "bold",
-    marginBottom: 20,
+  tinyLogo: {
+    width: 50,
+    height: 50,
   },
-  barcodeImage: {
+  logo: {
+    width: 400,
     height: 400,
-    width: "100%",
-    marginBottom: 20,
-  },
-  subText: {
-    fontSize: 16,
-    color: "#fff",
-    textAlign: "center",
   },
 });
+
 export default BarCode;

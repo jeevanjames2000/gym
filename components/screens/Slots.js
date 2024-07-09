@@ -5,29 +5,19 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import Collapsible from "react-native-collapsible";
 
 const Slots = ({ route, navigation }) => {
   const [slotsdata, setSlotsData] = useState([]);
-  console.log("slotsdata: ", slotsdata);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [storage, setStorage] = useState(null);
-  console.log("storage: ", storage);
-
-  const {
-    data = [
-      {
-        location: "GYM",
-        name: "Cameron Williams",
-        date: "23/32/322",
-        slot: "8:00AM",
-        dept: "CATS",
-        mobile: "132-32323665",
-      },
-    ],
-  } = route.params || {};
 
   const isBefore6PM = () => {
     const now = new Date();
@@ -37,42 +27,61 @@ const Slots = ({ route, navigation }) => {
     return now < sixPM;
   };
 
-  const fetchGymSchedules = async () => {
+  const storeData = async () => {
     try {
-      setIsLoading(true);
-      setError(false);
-
-      const response = await fetch(
-        `https://g-gym-backend.onrender.com/slot/gym/getGymBookingsByRegdNo/${storage}`
-      );
-      const data = await response.json();
-      const currentDate = new Date().toISOString().split("T")[0];
-
-      // Filter data based on start_date matching the current date
-      const filteredData = data.filter(
-        (item) =>
-          new Date(item.start_date).toISOString().split("T")[0] === currentDate
-      );
-      setSlotsData(filteredData);
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      setError(true);
-    }
+      await AsyncStorage.setItem("qrCode", "hi");
+    } catch (e) {}
   };
-  const fetchData = async () => {
-    const value = await AsyncStorage.getItem("myKey");
-    if (value !== null) {
-      setStorage(value);
-    }
-  };
+
   useEffect(() => {
+    const fetchData = async () => {
+      const value = await AsyncStorage.getItem("myKey");
+      if (value !== null) {
+        setStorage(value);
+      }
+    };
+    storeData();
     fetchData();
-    fetchGymSchedules();
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchGymSchedules = async () => {
+        try {
+          setIsLoading(true);
+          setError(false);
+
+          const response = await fetch(
+            `https://g-gym-backend.onrender.com/slot/gym/getGymBookingsByRegdNo/${storage}`
+          );
+          const data = await response.json();
+
+          const currentDate = new Date().toISOString().split("T")[0];
+          const filteredData = data.filter(
+            (item) =>
+              new Date(item.start_date).toISOString().split("T")[0] ===
+              currentDate
+          );
+
+          setSlotsData(filteredData);
+          setIsLoading(false);
+        } catch (error) {
+          setIsLoading(false);
+          setError(true);
+        }
+      };
+
+      fetchGymSchedules();
+    }, [storage])
+  );
 
   const handleUpdatePress = () => {
     navigation.navigate("Schedules");
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
   };
 
   return (
@@ -89,16 +98,65 @@ const Slots = ({ route, navigation }) => {
                 <Text style={styles.updateText}>Update</Text>
               </TouchableOpacity>
             )}
-            <Text style={styles.slotText}>
-              Slot: {slot.start_time} - {slot.end_time}
-            </Text>
-            <Text style={styles.detailText}>Name: {slot.regdNo}</Text>
-            <Text style={styles.detailText}>Location: {slot.Location}</Text>
-            <Text style={styles.detailText}>Status: {slot.status}</Text>
-            <Text style={styles.detailText}>Campus: {slot.campus}</Text>
-            <Text style={styles.detailText}>
-              Date: {slot.start_date} - {slot.end_date}
-            </Text>
+            <View style={styles.detailContainer}>
+              <Ionicons
+                name="time-outline"
+                size={24}
+                color="#3498db"
+                style={styles.icon}
+              />
+              <Text style={styles.detailText}>
+                {slot.start_time} - {slot.end_time}
+              </Text>
+            </View>
+            <View style={styles.detailContainer}>
+              <Ionicons
+                name="person-outline"
+                size={24}
+                color="#3498db"
+                style={styles.icon}
+              />
+              <Text style={styles.detailText}>{slot.regdNo}</Text>
+            </View>
+            <View style={styles.detailContainer}>
+              <Ionicons
+                name="location-outline"
+                size={24}
+                color="#3498db"
+                style={styles.icon}
+              />
+              <Text style={styles.detailText}>{slot.Location}</Text>
+            </View>
+
+            <View style={styles.detailContainer}>
+              <Ionicons
+                name="school-outline"
+                size={24}
+                color="#3498db"
+                style={styles.icon}
+              />
+              <Text style={styles.detailText}>{slot.campus}</Text>
+            </View>
+            <View style={styles.detailContainer}>
+              <Ionicons
+                name="calendar-outline"
+                size={24}
+                color="#3498db"
+                style={styles.icon}
+              />
+              <Text style={styles.detailText}>
+                {formatDate(slot.start_date)} - {formatDate(slot.end_date)}
+              </Text>
+            </View>
+
+            <View style={styles.imgcontainer}>
+              <Image
+                style={{ windth: 300, height: 300 }}
+                source={{
+                  uri: slot.qr_code,
+                }}
+              />
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -107,6 +165,9 @@ const Slots = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  imgcontainer: {
+    padding: 20,
+  },
   container: {
     flex: 1,
     padding: 20,
@@ -152,6 +213,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderRadius: 10,
     color: "#fff",
+  },
+  boldText: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  detailText: {
+    fontSize: 17,
+  },
+  detailContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
+  },
+  icon: {
+    marginRight: 10,
   },
 });
 

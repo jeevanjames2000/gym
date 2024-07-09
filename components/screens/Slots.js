@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,16 @@ import {
   ScrollView,
   TouchableOpacity,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Slots = ({ route, navigation }) => {
+  const [slotsdata, setSlotsData] = useState([]);
+  console.log("slotsdata: ", slotsdata);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [storage, setStorage] = useState(null);
+  console.log("storage: ", storage);
+
   const {
     data = [
       {
@@ -29,6 +37,40 @@ const Slots = ({ route, navigation }) => {
     return now < sixPM;
   };
 
+  const fetchGymSchedules = async () => {
+    try {
+      setIsLoading(true);
+      setError(false);
+
+      const response = await fetch(
+        `https://g-gym-backend.onrender.com/slot/gym/getGymBookingsByRegdNo/${storage}`
+      );
+      const data = await response.json();
+      const currentDate = new Date().toISOString().split("T")[0];
+
+      // Filter data based on start_date matching the current date
+      const filteredData = data.filter(
+        (item) =>
+          new Date(item.start_date).toISOString().split("T")[0] === currentDate
+      );
+      setSlotsData(filteredData);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      setError(true);
+    }
+  };
+  const fetchData = async () => {
+    const value = await AsyncStorage.getItem("myKey");
+    if (value !== null) {
+      setStorage(value);
+    }
+  };
+  useEffect(() => {
+    fetchData();
+    fetchGymSchedules();
+  }, []);
+
   const handleUpdatePress = () => {
     navigation.navigate("Schedules");
   };
@@ -37,7 +79,7 @@ const Slots = ({ route, navigation }) => {
     <View style={styles.container}>
       {/* <Text style={styles.title}>Booked Slots</Text> */}
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {data?.map((slot, index) => (
+        {slotsdata?.map((slot, index) => (
           <View key={index} style={styles.card}>
             {isBefore6PM() && (
               <TouchableOpacity
@@ -47,11 +89,16 @@ const Slots = ({ route, navigation }) => {
                 <Text style={styles.updateText}>Update</Text>
               </TouchableOpacity>
             )}
-            <Text style={styles.slotText}>Time: {slot.slot}</Text>
-            <Text style={styles.detailText}>Name: {slot.name}</Text>
-            <Text style={styles.detailText}>Location: {slot.location}</Text>
-            <Text style={styles.detailText}>Department: {slot.dept}</Text>
-            <Text style={styles.detailText}>Mobile: {slot.mobile}</Text>
+            <Text style={styles.slotText}>
+              Slot: {slot.start_time} - {slot.end_time}
+            </Text>
+            <Text style={styles.detailText}>Name: {slot.regdNo}</Text>
+            <Text style={styles.detailText}>Location: {slot.Location}</Text>
+            <Text style={styles.detailText}>Status: {slot.status}</Text>
+            <Text style={styles.detailText}>Campus: {slot.campus}</Text>
+            <Text style={styles.detailText}>
+              Date: {slot.start_date} - {slot.end_date}
+            </Text>
           </View>
         ))}
       </ScrollView>

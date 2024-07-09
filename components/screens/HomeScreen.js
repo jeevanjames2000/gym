@@ -15,20 +15,6 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const timeSlots = [
-  "6:00 AM",
-  "7:00 AM",
-  "8:00 AM",
-  "12:00 PM",
-  "2:00 PM",
-  "3:00 PM",
-  "4:00 PM",
-  "5:00 PM",
-  "6:00 PM",
-  "7:00 PM",
-  "8:00 PM",
-];
-
 const HomeScreen = ({ navigation = {} }) => {
   const [selectedTime, setSelectedTime] = useState(null);
 
@@ -51,8 +37,12 @@ const HomeScreen = ({ navigation = {} }) => {
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
   const [slotsdata, setSlotsData] = useState([]);
+  const [fullData, setFullData] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [storeErr, setStoreErr] = useState([]);
+  const [resLoading, setResLoading] = useState(false);
 
   const onDateChange = (event, date) => {
     const currentDate = date || selectedDate;
@@ -66,17 +56,19 @@ const HomeScreen = ({ navigation = {} }) => {
       setError(false);
       const formattedDate = date.toISOString().split("T")[0];
       const response = await fetch(
-        `https://g-gym-backend.onrender.com/api/gym/getGymSchedulesByLocationMongo/${location}/${formattedDate}`
+        `https://g-gym-backend.onrender.com/slot/gym/getGymSchedulesByLocationMongo/${location}/${formattedDate}`
       );
       const data = await response.json();
-      const filter = data.filteredData;
+      console.log("data: ", data);
 
-      if (filter.length === 0) {
+      if (data.length === 0) {
         setError(true);
       } else {
-        const slots = filter.map((slot) => ({
+        const slots = data?.map((slot) => ({
           ...slot,
           time: slot.start_time,
+          Gym_scheduling_id: slot.Gym_scheduling_id,
+          Access_type: slot.Access_type,
           endTime: slot.end_time,
           available: slot.available,
           Location: slot.Location,
@@ -94,6 +86,7 @@ const HomeScreen = ({ navigation = {} }) => {
   };
 
   const [storage, setStorage] = useState(null);
+
   useEffect(() => {
     const fetchData = async () => {
       const value = await AsyncStorage.getItem("myKey");
@@ -165,33 +158,33 @@ const HomeScreen = ({ navigation = {} }) => {
   };
 
   const [slottime, setSlotTime] = useState([]);
+  console.log("slottime: ", slottime);
 
   const handleTimeSlotSelect = (slot) => {
+    // console.log("slot: ", slot);
     if (!slot.disabled) {
       setSlotTime(slot);
       setSelectedTime(slot.time);
       setModalVisible(true);
     }
   };
-
   const handleBookSlot = async () => {
+    setResLoading(true);
     closeModal();
     if (selectedTime && !bookedSlots.includes(selectedTime)) {
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+
       const apiUrl =
         "https://g-gym-backend.onrender.com/slot/gym/insertGymMasterSchedulingMongo";
 
       const bookingData = {
-        Gym_scheduling_id: "V1",
-        regdNo: storage.regdNo,
+        Gym_scheduling_id: slottime.Gym_scheduling_id,
+        regdNo: storage,
         start_date: formattedDate,
         start_time: slottime.start_time,
         end_time: slottime.end_time,
-        end_date: slottime.end_date,
-        generated_by: "Cats",
-        generated_time: "2024-07-08T05:36:16.748Z",
-        Access_type: "All",
-        Location: slottime.location,
-        campus: "VSP",
+        Location: slottime.Location,
+        campus: slottime.campus,
       };
 
       try {
@@ -203,19 +196,32 @@ const HomeScreen = ({ navigation = {} }) => {
           body: JSON.stringify(bookingData),
         });
 
-        const responseData = await response.json();
+        const contentType = response.headers.get("content-type");
+        let responseData;
 
-        if (!response.ok) {
-          throw new Error(responseData.message || "Failed to book slot");
+        if (contentType && contentType.includes("application/json")) {
+          responseData = await response.json();
+        } else {
+          responseData = await response.text();
         }
 
-        console.log("Booking response:", responseData);
+        if (response.status === "success" || 200) {
+          setResLoading(false);
+          setBookedSlots([...bookedSlots, selectedTime]);
+          setSlotConfirmationVisible(true);
+          console.log("Booking response:", responseData);
+          setStoreErr(responseData);
+        } else {
+          setResLoading(false);
+          setStoreErr(responseData);
+
+          console.log("Error", responseData.message || "Failed to book slot");
+        }
       } catch (error) {
-        console.error("Error booking slot:", error.message);
-        Alert.alert("Error", error.message || "Failed to book slot");
+        setResLoading(false);
+
+        Alert.alert("Error", "Failed to book slot");
       }
-      setBookedSlots([...bookedSlots, selectedTime]);
-      setSlotConfirmationVisible(true);
     }
   };
 
@@ -446,15 +452,43 @@ const HomeScreen = ({ navigation = {} }) => {
           >
             <TouchableWithoutFeedback>
               <View style={styles.slotConfirmationModal}>
-                <Text style={styles.slotConfirmationText}>
-                  Slot booked successfully!
-                </Text>
-                <TouchableOpacity
-                  style={styles.okButton}
-                  onPress={handleScanner}
-                >
-                  <Text style={styles.okButtonText}>OK</Text>
-                </TouchableOpacity>
+                {/* {resLoading && (
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#007367" />
+                    <Text>Loading</Text>
+                  </View>
+                )} */}
+                {storeErr.status === "error" ? (
+                  <>
+                    <Text
+                      style={{
+                        fontSize: 18,
+                        marginBottom: 20,
+                        color: "red",
+                      }}
+                    >
+                      Failed to Book Slot
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.okButton}
+                      onPress={() => setSlotConfirmationVisible(false)}
+                    >
+                      <Text style={{ fontSize: 16, color: "#fff" }}>OK</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.slotConfirmationText}>
+                      Slot booked successfully!
+                    </Text>
+                    <TouchableOpacity
+                      style={styles.okButton}
+                      onPress={handleScanner}
+                    >
+                      <Text style={styles.okButtonText}>OK</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
               </View>
             </TouchableWithoutFeedback>
           </TouchableOpacity>

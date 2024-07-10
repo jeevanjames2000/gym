@@ -72,7 +72,7 @@ const BarCode = ({ route, navigation }) => {
           <ActivityIndicator
             size="large"
             color="#007367"
-            style={{ transform: [{ scale: 2 }] }}
+            // style={{ transform: [{ scale: 2 }] }}
           />
           <Text>Loading</Text>
         </View>

@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LoginScreen = ({ navigation }) => {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("502849");
   const [password, setPassword] = useState("1234");
+  const [error, setError] = useState(false);
 
   const storeData = async () => {
     try {
@@ -20,9 +22,26 @@ const LoginScreen = ({ navigation }) => {
     } catch (e) {}
   };
   const handleLogin = () => {
-    storeData();
-
-    navigation.navigate("Home");
+    if (username === "502849") {
+      storeData();
+      navigation.navigate("Home");
+    } else {
+      setError(true);
+      Alert.alert(
+        "Invalid Credentials",
+        "Please enter valid details",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "OK",
+          },
+        ],
+        { cancelable: false }
+      );
+    }
   };
 
   return (
@@ -49,6 +68,8 @@ const LoginScreen = ({ navigation }) => {
           secureTextEntry
           onChangeText={setPassword}
         />
+        {/* {error && <Text style={{ color: "red" }}>Invalid Credentials</Text>} */}
+
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
           <Text style={styles.buttonText}>Login</Text>
           <Ionicons
@@ -120,12 +141,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
   },
+
   buttonText: {
     color: "#fff",
     fontSize: 18,
     textAlign: "center",
     marginRight: 10,
   },
+
   icon: {
     color: "#fff",
   },

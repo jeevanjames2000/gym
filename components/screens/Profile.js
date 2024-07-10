@@ -1,11 +1,24 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Profile = ({ navigation }) => {
   const handleLogout = () => {
     navigation.navigate("Login");
   };
+  const [storage, setStorage] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const value = await AsyncStorage.getItem("myKey");
+      if (value !== null) {
+        setStorage(value);
+      }
+    };
+
+    fetchData();
+  }, []);
   return (
     <>
       <View
@@ -13,7 +26,6 @@ const Profile = ({ navigation }) => {
           justifyContent: "center",
           alignItems: "center",
           padding: 10,
-          // backgroundColor: "#ffff",
         }}
       >
         <Image
@@ -24,7 +36,7 @@ const Profile = ({ navigation }) => {
         <Text style={{ fontSize: 34, fontWeight: "bold" }}>
           Cameron Williams
         </Text>
-        <Text style={{ fontSize: 24, fontWeight: "200" }}>44432384738</Text>
+        <Text style={{ fontSize: 24, fontWeight: "500" }}>{storage}</Text>
 
         <TouchableOpacity style={styles.logout} onPress={handleLogout}>
           <Text style={styles.buttonText}>Logout</Text>

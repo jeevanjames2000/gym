@@ -6,17 +6,18 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import Collapsible from "react-native-collapsible";
 
 const Slots = ({ route, navigation }) => {
   const [slotsdata, setSlotsData] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState([]);
   const [storage, setStorage] = useState(null);
 
   const isBefore6PM = () => {
@@ -49,7 +50,6 @@ const Slots = ({ route, navigation }) => {
       const fetchGymSchedules = async () => {
         try {
           setIsLoading(true);
-          setError(false);
 
           const response = await fetch(
             `https://g-gym-backend.onrender.com/slot/gym/getGymBookingsByRegdNo/${storage}`
@@ -64,10 +64,10 @@ const Slots = ({ route, navigation }) => {
           );
 
           setSlotsData(filteredData);
+          setError(response.status);
           setIsLoading(false);
         } catch (error) {
           setIsLoading(false);
-          setError(true);
         }
       };
 
@@ -76,7 +76,24 @@ const Slots = ({ route, navigation }) => {
   );
 
   const handleUpdatePress = () => {
-    navigation.navigate("Schedules");
+    Alert.alert(
+      "Confirmation",
+      "Are you sure to update the current slots?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => {
+            const query = "Update";
+            navigation.navigate("Schedules", { query });
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   const formatDate = (dateString) => {
@@ -85,93 +102,109 @@ const Slots = ({ route, navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* <Text style={styles.title}>Booked Slots</Text> */}
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {slotsdata?.map((slot, index) => (
-          <View key={index} style={styles.card}>
-            {isBefore6PM() && (
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={handleUpdatePress}
-              >
-                <Text style={styles.updateText}>Update</Text>
-              </TouchableOpacity>
-            )}
-            <View style={styles.detailContainer}>
-              <Ionicons
-                name="time-outline"
-                size={24}
-                color="#3498db"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>
-                {slot.start_time} - {slot.end_time}
-              </Text>
-            </View>
-            <View style={styles.detailContainer}>
-              <Ionicons
-                name="person-outline"
-                size={24}
-                color="#3498db"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>{slot.regdNo}</Text>
-            </View>
-            <View style={styles.detailContainer}>
-              <Ionicons
-                name="location-outline"
-                size={24}
-                color="#3498db"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>{slot.Location}</Text>
-            </View>
-
-            <View style={styles.detailContainer}>
-              <Ionicons
-                name="school-outline"
-                size={24}
-                color="#3498db"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>{slot.campus}</Text>
-            </View>
-            <View style={styles.detailContainer}>
-              <Ionicons
-                name="calendar-outline"
-                size={24}
-                color="#3498db"
-                style={styles.icon}
-              />
-              <Text style={styles.detailText}>
-                {formatDate(slot.start_date)} - {formatDate(slot.end_date)}
-              </Text>
-            </View>
-
-            <View style={styles.imgcontainer}>
-              <Image
-                style={{ windth: 300, height: 300 }}
-                source={{
-                  uri: slot.qr_code,
-                }}
-              />
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-    </View>
+    <>
+      {isLoading ? (
+        <View style={styles.modalLoading}>
+          <ActivityIndicator size="large" color="#007367" />
+          <Text>Loading</Text>
+        </View>
+      ) : (
+        <View style={styles.container}>
+          {Array.isArray(slotsdata) && slotsdata.length === 0 ? (
+            error === 500 && (
+              <View style={{ alignItems: "center" }}>
+                <Text style={{ fontSize: 20, fontWeight: "bold" }}>
+                  No Slots Booked
+                </Text>
+              </View>
+            )
+          ) : (
+            <ScrollView contentContainerStyle={styles.scrollViewContent}>
+              {slotsdata?.map((slot, index) => (
+                <View key={index} style={styles.card}>
+                  {isBefore6PM() && (
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={handleUpdatePress}
+                    >
+                      <Text style={styles.updateText}>Update</Text>
+                    </TouchableOpacity>
+                  )}
+                  <View style={styles.detailContainer}>
+                    <Ionicons
+                      name="time-outline"
+                      size={24}
+                      color="#3498db"
+                      style={styles.icon}
+                    />
+                    <Text style={styles.detailText}>
+                      {slot.start_time} - {slot.end_time}
+                    </Text>
+                  </View>
+                  <View style={styles.detailContainer}>
+                    <Ionicons
+                      name="person-outline"
+                      size={24}
+                      color="#3498db"
+                      style={styles.icon}
+                    />
+                    <Text style={styles.detailText}>{slot.regdNo}</Text>
+                  </View>
+                  <View style={styles.detailContainer}>
+                    <Ionicons
+                      name="location-outline"
+                      size={24}
+                      color="#3498db"
+                      style={styles.icon}
+                    />
+                    <Text style={styles.detailText}>{slot.Location}</Text>
+                  </View>
+                  <View style={styles.detailContainer}>
+                    <Ionicons
+                      name="school-outline"
+                      size={24}
+                      color="#3498db"
+                      style={styles.icon}
+                    />
+                    <Text style={styles.detailText}>{slot.campus}</Text>
+                  </View>
+                  <View style={styles.detailContainer}>
+                    <Ionicons
+                      name="calendar-outline"
+                      size={24}
+                      color="#3498db"
+                      style={styles.icon}
+                    />
+                    <Text style={styles.detailText}>
+                      {formatDate(slot.start_date)} -{" "}
+                      {formatDate(slot.end_date)}
+                    </Text>
+                  </View>
+                  <View style={styles.imgcontainer}>
+                    <Image
+                      style={{ width: 300, height: 300 }}
+                      source={{ uri: slot.qr_code }}
+                    />
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          )}
+        </View>
+      )}
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   imgcontainer: {
     padding: 20,
+    alignItems: "center",
   },
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f0f0f0", // Add a background color for better visibility
+    backgroundColor: "#f0f0f0",
   },
   title: {
     fontSize: 24,
@@ -228,6 +261,17 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 10,
+  },
+  modalLoading: {
+    position: "absolute",
+    padding: 20,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
   },
 });
 

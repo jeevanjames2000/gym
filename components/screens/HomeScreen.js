@@ -15,7 +15,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const HomeScreen = ({ navigation = {} }) => {
+const HomeScreen = ({ route, navigation = {} }) => {
   const [selectedTime, setSelectedTime] = useState(null);
 
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
@@ -201,16 +201,20 @@ const HomeScreen = ({ navigation = {} }) => {
           responseData = await response.text();
         }
 
-        if (response.status === "success" || 200) {
+        if (response.status === 200) {
           setResLoading(false);
           setBookedSlots([...bookedSlots, selectedTime]);
           setSlotConfirmationVisible(true);
           setStoreErr(responseData);
         } else {
           setResLoading(false);
+          setSlotConfirmationVisible(true);
+
           setStoreErr(responseData);
         }
       } catch (error) {
+        setSlotConfirmationVisible(true);
+
         setResLoading(false);
         Alert.alert("Error", "Failed to book slot");
       }
@@ -229,7 +233,7 @@ const HomeScreen = ({ navigation = {} }) => {
       },
     ];
     setSlotConfirmationVisible(false);
-    navigation.navigate("BarCode", { data });
+    // navigation.navigate("BarCode", { data });
   };
   const renderTimeSlots = () => {
     return availableTimeSlots.map((slot) => (
@@ -431,60 +435,65 @@ const HomeScreen = ({ navigation = {} }) => {
           </TouchableOpacity>
         </Modal>
 
-        <Modal
-          visible={isSlotConfirmationVisible}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setSlotConfirmationVisible(false)}
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setSlotConfirmationVisible(false)}
+        {resLoading ? (
+          <View style={styles.modalLoading}>
+            <ActivityIndicator
+              size="large"
+              color="#007367"
+              // style={{ transform: [{ scale: 2 }] }}
+            />
+            <Text>Loading</Text>
+          </View>
+        ) : (
+          <Modal
+            visible={isSlotConfirmationVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setSlotConfirmationVisible(false)}
           >
-            <TouchableWithoutFeedback>
-              <View style={styles.slotConfirmationModal}>
-                {/* {resLoading && (
-                  <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#007367" />
-                    <Text>Loading</Text>
-                  </View>
-                )} */}
-                {storeErr.status === "error" ? (
-                  <>
-                    <Text
-                      style={{
-                        fontSize: 18,
-                        marginBottom: 20,
-                        color: "red",
-                      }}
-                    >
-                      Failed to Book Slot
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.okButton}
-                      onPress={() => setSlotConfirmationVisible(false)}
-                    >
-                      <Text style={{ fontSize: 16, color: "#fff" }}>OK</Text>
-                    </TouchableOpacity>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.slotConfirmationText}>
-                      Slot booked successfully!
-                    </Text>
-                    <TouchableOpacity
-                      style={styles.okButton}
-                      onPress={handleScanner}
-                    >
-                      <Text style={styles.okButtonText}>OK</Text>
-                    </TouchableOpacity>
-                  </>
-                )}
-              </View>
-            </TouchableWithoutFeedback>
-          </TouchableOpacity>
-        </Modal>
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setSlotConfirmationVisible(false)}
+            >
+              <TouchableWithoutFeedback>
+                <View style={styles.slotConfirmationModal}>
+                  {storeErr.status === "error" ? (
+                    <>
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          marginBottom: 20,
+                          color: "red",
+                        }}
+                      >
+                        {storeErr.message}
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.okButton}
+                        onPress={() => setSlotConfirmationVisible(false)}
+                      >
+                        <Text style={{ fontSize: 16, color: "#fff" }}>OK</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.slotConfirmationText}>
+                        Slot booked successfully!
+                      </Text>
+                      <TouchableOpacity
+                        style={styles.okButton}
+                        onPress={handleScanner}
+                      >
+                        <Text style={styles.okButtonText}>OK</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              </TouchableWithoutFeedback>
+            </TouchableOpacity>
+          </Modal>
+        )}
       </View>
       {/* <Footer navigation={navigation} /> */}
     </>
@@ -666,9 +675,20 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
-
     padding: 20,
     alignItems: "center",
+  },
+
+  modalLoading: {
+    position: "absolute",
+    padding: 30,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
   },
 });
 export default HomeScreen;

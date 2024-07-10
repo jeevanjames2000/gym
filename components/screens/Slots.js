@@ -34,6 +34,24 @@ const Slots = ({ route, navigation }) => {
     } catch (e) {}
   };
 
+  const handleDelete = async () => {
+    const regdNo = await AsyncStorage.getItem("myKey");
+
+    const deleteResponse = await fetch(
+      `https://g-gym-backend.onrender.com/slot/gym/deleteGymBookingsByRegdNo/${regdNo}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const res = deleteResponse;
+    if (res.status == 200) {
+      console.log("res: ", res);
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       const value = await AsyncStorage.getItem("myKey");
@@ -87,8 +105,9 @@ const Slots = ({ route, navigation }) => {
         {
           text: "OK",
           onPress: () => {
-            const query = "Update";
-            navigation.navigate("Schedules", { query });
+            const data = "Update";
+            handleDelete();
+            navigation.navigate("Schedules", { data });
           },
         },
       ],

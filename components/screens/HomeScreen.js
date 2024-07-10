@@ -14,14 +14,12 @@ import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 const HomeScreen = ({ route, navigation = {} }) => {
+  const data = route.params ? route.params.data : undefined;
+
   const [selectedTime, setSelectedTime] = useState(null);
-
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
-
   const [selectedDate, setSelectedDate] = useState(new Date());
-
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState("GYM");
@@ -31,22 +29,18 @@ const HomeScreen = ({ route, navigation = {} }) => {
     { label: "Girls Hostel", value: "Girls Hostel" },
     { label: "Campus", value: "Campus" },
   ]);
-
   const [isModalVisible, setModalVisible] = useState(false);
   const [bookedSlots, setBookedSlots] = useState([]);
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
   const [slotsdata, setSlotsData] = useState([]);
-
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [storeErr, setStoreErr] = useState([]);
   const [resLoading, setResLoading] = useState(false);
-
   const onDateChange = (event, date) => {
     const currentDate = date || selectedDate;
     setSelectedDate(currentDate);
-
     hideDatePicker();
   };
   const fetchGymSchedules = async (location, date) => {
@@ -58,7 +52,6 @@ const HomeScreen = ({ route, navigation = {} }) => {
         `https://g-gym-backend.onrender.com/slot/gym/getGymSchedulesByLocationMongo/${location}/${formattedDate}`
       );
       const data = await response.json();
-
       if (data.length === 0) {
         setError(true);
       } else {
@@ -82,8 +75,24 @@ const HomeScreen = ({ route, navigation = {} }) => {
       setError(true);
     }
   };
-
   const [storage, setStorage] = useState(null);
+  const handleDelete = async () => {
+    const regdNo = await AsyncStorage.getItem("myKey");
+    console.log("regdNo: ", regdNo);
+    const deleteResponse = await fetch(
+      `https://g-gym-backend.onrender.com/slot/gym/deleteGymBookingsByRegdNo/${regdNo}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const res = deleteResponse;
+    if (res.status == 200) {
+      console.log("res: ", res);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,20 +101,25 @@ const HomeScreen = ({ route, navigation = {} }) => {
         setStorage(value);
       }
     };
+
     fetchData();
   }, []);
 
   useEffect(() => {
-    fetchGymSchedules(value, selectedDate);
-    const timeout = setTimeout(() => {
-      if (isLoading) {
-        setIsLoading(false);
-        setError(true);
-      }
-    }, 10000);
+    const fetchData = async () => {
+      await fetchGymSchedules(value, selectedDate);
+      const timeout = setTimeout(() => {
+        if (isLoading) {
+          setIsLoading(false);
+          setError(true);
+        }
+      }, 10000);
 
-    return () => clearTimeout(timeout);
-  }, [value, selectedDate]);
+      return () => clearTimeout(timeout);
+    };
+
+    fetchData();
+  }, [value]);
 
   useEffect(() => {
     const filterTimeSlots = () => {
@@ -114,19 +128,15 @@ const HomeScreen = ({ route, navigation = {} }) => {
         const slotTimeParts = slot.start_time.split(" ");
         let [hours, minutes] = slotTimeParts[0].split(":");
         const modifier = slotTimeParts[1];
-
         hours = parseInt(hours);
         minutes = parseInt(minutes);
-
         if (modifier === "PM" && hours !== 12) {
           hours += 12;
         } else if (modifier === "AM" && hours === 12) {
           hours = 0;
         }
-
         const slotTime = new Date(currentTime);
         slotTime.setHours(hours, minutes, 0, 0);
-
         return {
           ...slot,
           end_time: slot.end_time,
@@ -135,28 +145,25 @@ const HomeScreen = ({ route, navigation = {} }) => {
         };
       });
     };
-
     setAvailableTimeSlots(filterTimeSlots());
-  }, [slotsdata, bookedSlots]);
+    // if (data) {
+    //   handleDelete();
+    // }
+  }, [slotsdata, bookedSlots, value]);
   const showDatePicker = () => {
     setDatePickerVisible(true);
   };
-
   const hideDatePicker = () => {
     setDatePickerVisible(false);
   };
-
   const handleValueChange = (newValue) => {
     setValue(newValue);
     fetchGymSchedules(newValue, selectedDate);
   };
-
   const closeModal = () => {
     setModalVisible(false);
   };
-
   const [slottime, setSlotTime] = useState([]);
-
   const handleTimeSlotSelect = (slot) => {
     if (!slot.disabled) {
       setSlotTime(slot);
@@ -169,10 +176,8 @@ const HomeScreen = ({ route, navigation = {} }) => {
     closeModal();
     if (selectedTime && !bookedSlots.includes(selectedTime)) {
       const formattedDate = selectedDate.toISOString().split("T")[0];
-
       const apiUrl =
         "https://g-gym-backend.onrender.com/slot/gym/insertGymMasterSchedulingMongo";
-
       const bookingData = {
         Gym_scheduling_id: slottime.Gym_scheduling_id,
         regdNo: storage,
@@ -182,7 +187,6 @@ const HomeScreen = ({ route, navigation = {} }) => {
         Location: slottime.Location,
         campus: slottime.campus,
       };
-
       try {
         const response = await fetch(apiUrl, {
           method: "POST",
@@ -191,16 +195,13 @@ const HomeScreen = ({ route, navigation = {} }) => {
           },
           body: JSON.stringify(bookingData),
         });
-
         const contentType = response.headers.get("content-type");
         let responseData;
-
         if (contentType && contentType.includes("application/json")) {
           responseData = await response.json();
         } else {
           responseData = await response.text();
         }
-
         if (response.status === 200) {
           setResLoading(false);
           setBookedSlots([...bookedSlots, selectedTime]);
@@ -209,31 +210,19 @@ const HomeScreen = ({ route, navigation = {} }) => {
         } else {
           setResLoading(false);
           setSlotConfirmationVisible(true);
-
           setStoreErr(responseData);
         }
       } catch (error) {
         setSlotConfirmationVisible(true);
-
         setResLoading(false);
         Alert.alert("Error", "Failed to book slot");
       }
     }
   };
 
-  const handleScanner = () => {
-    const data = [
-      {
-        location: value,
-        name: "Cameron Williams",
-        date: selectedDate.toISOString(),
-        slot: selectedTime,
-        dept: "CATS",
-        mobile: "132-32323665",
-      },
-    ];
+  const handleRouteBack = () => {
     setSlotConfirmationVisible(false);
-    // navigation.navigate("BarCode", { data });
+    navigation.navigate("Home");
   };
   const renderTimeSlots = () => {
     return availableTimeSlots.map((slot) => (
@@ -261,7 +250,6 @@ const HomeScreen = ({ route, navigation = {} }) => {
       </TouchableOpacity>
     ));
   };
-
   return (
     <>
       <View style={styles.container}>
@@ -306,7 +294,6 @@ const HomeScreen = ({ route, navigation = {} }) => {
         </View>
         <View style={styles.timeSlots}>
           <Text style={styles.title}>Select Time Slots</Text>
-
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#007367" />
@@ -322,7 +309,6 @@ const HomeScreen = ({ route, navigation = {} }) => {
             </ScrollView>
           )}
         </View>
-
         <Modal
           visible={isModalVisible}
           transparent={true}
@@ -371,7 +357,6 @@ const HomeScreen = ({ route, navigation = {} }) => {
                         {selectedDate.toLocaleDateString()}
                       </Text>
                     </View>
-
                     <View style={styles.detailItem}>
                       <Ionicons
                         name="checkmark-done-outline"
@@ -434,14 +419,9 @@ const HomeScreen = ({ route, navigation = {} }) => {
             </TouchableWithoutFeedback>
           </TouchableOpacity>
         </Modal>
-
         {resLoading ? (
           <View style={styles.modalLoading}>
-            <ActivityIndicator
-              size="large"
-              color="#007367"
-              // style={{ transform: [{ scale: 2 }] }}
-            />
+            <ActivityIndicator size="large" color="#007367" />
             <Text>Loading</Text>
           </View>
         ) : (
@@ -471,7 +451,7 @@ const HomeScreen = ({ route, navigation = {} }) => {
                       </Text>
                       <TouchableOpacity
                         style={styles.okButton}
-                        onPress={() => setSlotConfirmationVisible(false)}
+                        onPress={handleRouteBack}
                       >
                         <Text style={{ fontSize: 16, color: "#fff" }}>OK</Text>
                       </TouchableOpacity>
@@ -483,7 +463,7 @@ const HomeScreen = ({ route, navigation = {} }) => {
                       </Text>
                       <TouchableOpacity
                         style={styles.okButton}
-                        onPress={handleScanner}
+                        onPress={handleRouteBack}
                       >
                         <Text style={styles.okButtonText}>OK</Text>
                       </TouchableOpacity>
@@ -495,7 +475,7 @@ const HomeScreen = ({ route, navigation = {} }) => {
           </Modal>
         )}
       </View>
-      {/* <Footer navigation={navigation} /> */}
+      {}
     </>
   );
 };
@@ -678,7 +658,6 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
   },
-
   modalLoading: {
     position: "absolute",
     padding: 30,

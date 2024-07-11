@@ -78,7 +78,7 @@ const HomeScreen = ({ route, navigation = {} }) => {
   const [storage, setStorage] = useState(null);
   const handleDelete = async () => {
     const regdNo = await AsyncStorage.getItem("myKey");
-    console.log("regdNo: ", regdNo);
+
     const deleteResponse = await fetch(
       `https://g-gym-backend.onrender.com/slot/gym/deleteGymBookingsByRegdNo/${regdNo}`,
       {
@@ -90,7 +90,6 @@ const HomeScreen = ({ route, navigation = {} }) => {
     );
     const res = deleteResponse;
     if (res.status == 200) {
-      console.log("res: ", res);
     }
   };
 

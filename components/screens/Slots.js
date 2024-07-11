@@ -115,7 +115,7 @@ const Slots = ({ route, navigation }) => {
           onPress: () => {
             const data = "Update";
             handleDelete();
-            navigation.navigate("Schedules", { data });
+            navigation.navigate("Schedules");
           },
         },
       ],

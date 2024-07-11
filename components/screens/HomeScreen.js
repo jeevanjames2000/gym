@@ -14,9 +14,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-const HomeScreen = ({ route, navigation = {} }) => {
-  const data = route.params ? route.params.data : undefined;
-
+const HomeScreen = ({ navigation = {} }) => {
   const [selectedTime, setSelectedTime] = useState(null);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -145,9 +143,6 @@ const HomeScreen = ({ route, navigation = {} }) => {
       });
     };
     setAvailableTimeSlots(filterTimeSlots());
-    // if (data) {
-    //   handleDelete();
-    // }
   }, [slotsdata, bookedSlots, value]);
   const showDatePicker = () => {
     setDatePickerVisible(true);

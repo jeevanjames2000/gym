@@ -196,6 +196,7 @@ const HomeScreen = ({ navigation = {} }) => {
         } else {
           responseData = await response.text();
         }
+
         if (response.status === 200) {
           setResLoading(false);
           setBookedSlots([...bookedSlots, selectedTime]);

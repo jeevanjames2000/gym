@@ -21,12 +21,12 @@ const Slots = ({ route, navigation }) => {
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);
 
-  const isBefore6PM = () => {
+  const isSameDate = (slot) => {
     const now = new Date();
-    const sixPM = new Date();
-    sixPM.setHours(18, 0, 0);
+    const currentDateString = now.toISOString().split("T")[0];
+    const startDateString = slot.start_date.split("T")[0];
 
-    return now < sixPM;
+    return currentDateString === startDateString;
   };
 
   const storeData = async () => {
@@ -130,7 +130,7 @@ const Slots = ({ route, navigation }) => {
 
   const renderSlotDetails = (slot, index) => (
     <View key={index} style={styles.card}>
-      {isBefore6PM() && (
+      {isSameDate(slot) && (
         <TouchableOpacity style={styles.editButton} onPress={handleUpdatePress}>
           <Text style={styles.updateText}>Update</Text>
         </TouchableOpacity>

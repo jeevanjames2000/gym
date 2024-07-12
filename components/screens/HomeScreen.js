@@ -230,6 +230,13 @@ const HomeScreen = ({ navigation = {} }) => {
     ));
   };
 
+  const DetailItem = ({ icon, text, containerStyle }) => (
+    <View style={[styles.detailItem, containerStyle]}>
+      <Ionicons name={icon} size={24} color="#3498db" style={styles.icon} />
+      <Text style={styles.detailText}>{text}</Text>
+    </View>
+  );
+
   const renderDetails = () => (
     <View style={styles.detailsContainer}>
       <DetailItem icon="location-outline" text={value} />
@@ -406,12 +413,6 @@ const HomeScreen = ({ navigation = {} }) => {
   );
 };
 
-const DetailItem = ({ icon, text, containerStyle }) => (
-  <View style={[styles.detailItem, containerStyle]}>
-    <Ionicons name={icon} size={24} color="#3498db" style={styles.icon} />
-    <Text style={styles.detailText}>{text}</Text>
-  </View>
-);
 const styles = StyleSheet.create({
   container: {
     flex: 1,

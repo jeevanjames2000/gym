@@ -266,7 +266,7 @@ const HomeScreen = ({ navigation = {} }) => {
                 is24Hour={true}
                 display="default"
                 onChange={onDateChange}
-                // minimumDate={new Date()}
+                minimumDate={new Date()}
               />
             )}
           </View>

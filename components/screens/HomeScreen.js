@@ -20,22 +20,22 @@ const HomeScreen = ({ navigation = {} }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [open, setOpen] = useState(false);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [slotsdata, setSlotsData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [storeErr, setStoreErr] = useState([]);
+  const [resLoading, setResLoading] = useState(false);
   const [value, setValue] = useState("GYM");
+  const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
+    useState(false);
   const [items, setItems] = useState([
     { label: "GYM", value: "GYM" },
     { label: "Block-C", value: "Block-C" },
     { label: "Girls Hostel", value: "Girls Hostel" },
     { label: "Campus", value: "Campus" },
   ]);
-  const [isModalVisible, setModalVisible] = useState(false);
-  const [bookedSlots, setBookedSlots] = useState([]);
-  const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
-    useState(false);
-  const [slotsdata, setSlotsData] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [storeErr, setStoreErr] = useState([]);
-  const [resLoading, setResLoading] = useState(false);
   const onDateChange = (event, date) => {
     const currentDate = date || selectedDate;
     setSelectedDate(currentDate);
@@ -229,6 +229,78 @@ const HomeScreen = ({ navigation = {} }) => {
       </TouchableOpacity>
     ));
   };
+
+  const renderDetails = () => (
+    <View style={styles.detailsContainer}>
+      <DetailItem icon="location-outline" text={value} />
+      <DetailItem
+        icon="calendar-outline"
+        text={selectedDate.toLocaleDateString()}
+      />
+      <DetailItem
+        icon="checkmark-done-outline"
+        text={`Available: ${slottime.available}`}
+      />
+      <DetailItem
+        icon="lock-closed-outline"
+        text={`Occupied: ${slottime.occupied}`}
+      />
+      <DetailItem
+        icon="time-outline"
+        text={`${selectedTime} - ${slottime.end_time}`}
+        containerStyle={{ marginBottom: 15, width: "55%" }}
+      />
+    </View>
+  );
+
+  const renderMainModal = () => (
+    <View style={styles.modalContent}>
+      <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+        <Ionicons name="close-outline" size={20} color="#fff" />
+      </TouchableOpacity>
+      <Image
+        source={{
+          uri: "https://img.freepik.com/premium-photo/arafed-gym-with-treads-machines-large-room-generative-ai_955884-9931.jpg",
+        }}
+        style={styles.modalImage}
+        resizeMode="cover"
+      />
+      {renderDetails()}
+      <View style={{ justifyContent: "center", alignItems: "center" }}>
+        {selectedTime && bookedSlots.includes(selectedTime) ? (
+          <TouchableOpacity style={styles.updateButton}>
+            <Text style={styles.updateButtonText}>Update</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.confirmButton}
+            onPress={handleBookSlot}
+          >
+            <Text style={styles.confirmButtonText}>Confirm</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+
+  const renderSlotConfirmationModal = () => (
+    <View style={styles.slotConfirmationModal}>
+      <Text
+        style={{
+          fontSize: 18,
+          marginBottom: 20,
+          color: storeErr.status === "error" ? "red" : "#000",
+        }}
+      >
+        {storeErr.status === "error"
+          ? storeErr.message
+          : "Slot booked successfully!"}
+      </Text>
+      <TouchableOpacity style={styles.okButton} onPress={handleRouteBack}>
+        <Text style={{ fontSize: 16, color: "#fff" }}>OK</Text>
+      </TouchableOpacity>
+    </View>
+  );
   return (
     <>
       <View style={styles.container}>
@@ -266,7 +338,7 @@ const HomeScreen = ({ navigation = {} }) => {
               style={styles.dropdown}
               containerStyle={styles.dropdownContainerStyle}
               labelStyle={styles.dropdownLabel}
-              textStyle={styles.dropdownText}
+              // textStyle={styles.dropdownText}
               onChangeValue={handleValueChange}
             />
           </View>
@@ -300,104 +372,11 @@ const HomeScreen = ({ navigation = {} }) => {
             onPress={closeModal}
           >
             <TouchableWithoutFeedback>
-              <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
-                  <TouchableOpacity
-                    onPress={closeModal}
-                    style={styles.closeButton}
-                  >
-                    <Ionicons name="close-outline" size={20} color="#fff" />
-                  </TouchableOpacity>
-                  <Image
-                    source={{
-                      uri: "https://img.freepik.com/premium-photo/arafed-gym-with-treads-machines-large-room-generative-ai_955884-9931.jpg",
-                    }}
-                    style={styles.modalImage}
-                    resizeMode="cover"
-                  />
-                  <View style={styles.detailsContainer}>
-                    <View style={styles.detailItem}>
-                      <Ionicons
-                        name="location-outline"
-                        size={24}
-                        color="#3498db"
-                        style={styles.icon}
-                      />
-                      <Text style={styles.detailText}>{value}</Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                      <Ionicons
-                        name="calendar-outline"
-                        size={24}
-                        color="#3498db"
-                        style={styles.icon}
-                      />
-                      <Text style={styles.detailText}>
-                        {selectedDate.toLocaleDateString()}
-                      </Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                      <Ionicons
-                        name="checkmark-done-outline"
-                        size={24}
-                        color="#3498db"
-                        style={styles.icon}
-                      />
-                      <Text style={styles.detailText}>
-                        Available: {slottime.available}
-                      </Text>
-                    </View>
-                    <View style={styles.detailItem}>
-                      <Ionicons
-                        name="lock-closed-outline"
-                        size={24}
-                        color="#3498db"
-                        style={styles.icon}
-                      />
-                      <Text style={styles.detailText}>
-                        Occupied: {slottime.occupied}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginBottom: 15,
-                        width: "55%",
-                      }}
-                    >
-                      <Ionicons
-                        name="time-outline"
-                        size={24}
-                        color="#3498db"
-                        style={styles.icon}
-                      />
-                      <Text style={styles.detailText}>
-                        {selectedTime} - {slottime.end_time}
-                      </Text>
-                    </View>
-                  </View>
-                  <View
-                    style={{ justifyContent: "center", alignItems: "center" }}
-                  >
-                    {selectedTime && bookedSlots.includes(selectedTime) ? (
-                      <TouchableOpacity style={styles.updateButton}>
-                        <Text style={styles.updateButtonText}>Update</Text>
-                      </TouchableOpacity>
-                    ) : (
-                      <TouchableOpacity
-                        style={styles.confirmButton}
-                        onPress={handleBookSlot}
-                      >
-                        <Text style={styles.confirmButtonText}>Confirm</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              </View>
+              <View style={styles.modalContainer}>{renderMainModal()}</View>
             </TouchableWithoutFeedback>
           </TouchableOpacity>
         </Modal>
+
         {resLoading ? (
           <View style={styles.modalLoading}>
             <ActivityIndicator size="large" color="#007367" />
@@ -416,39 +395,7 @@ const HomeScreen = ({ navigation = {} }) => {
               onPress={() => setSlotConfirmationVisible(false)}
             >
               <TouchableWithoutFeedback>
-                <View style={styles.slotConfirmationModal}>
-                  {storeErr.status === "error" ? (
-                    <>
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          marginBottom: 20,
-                          color: "red",
-                        }}
-                      >
-                        {storeErr.message}
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.okButton}
-                        onPress={handleRouteBack}
-                      >
-                        <Text style={{ fontSize: 16, color: "#fff" }}>OK</Text>
-                      </TouchableOpacity>
-                    </>
-                  ) : (
-                    <>
-                      <Text style={styles.slotConfirmationText}>
-                        Slot booked successfully!
-                      </Text>
-                      <TouchableOpacity
-                        style={styles.okButton}
-                        onPress={handleRouteBack}
-                      >
-                        <Text style={styles.okButtonText}>OK</Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
-                </View>
+                {renderSlotConfirmationModal()}
               </TouchableWithoutFeedback>
             </TouchableOpacity>
           </Modal>
@@ -458,6 +405,13 @@ const HomeScreen = ({ navigation = {} }) => {
     </>
   );
 };
+
+const DetailItem = ({ icon, text, containerStyle }) => (
+  <View style={[styles.detailItem, containerStyle]}>
+    <Ionicons name={icon} size={24} color="#3498db" style={styles.icon} />
+    <Text style={styles.detailText}>{text}</Text>
+  </View>
+);
 const styles = StyleSheet.create({
   container: {
     flex: 1,

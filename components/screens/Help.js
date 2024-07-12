@@ -7,9 +7,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import Footer from "./Footer";
 
-const Help = ({ navigation }) => {
+const Help = () => {
   const faqs = [
     {
       question: "How do I reset my password?",
@@ -57,7 +56,6 @@ const Help = ({ navigation }) => {
           <Text style={styles.contactDetail}>Phone: (123) 456-7890</Text>
         </View>
       </ScrollView>
-      {/* <Footer navigation={navigation} /> */}
     </>
   );
 };

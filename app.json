@@ -3,9 +3,13 @@
     "name": "G-Gym",
     "slug": "gym",
     "version": "1.0.0",
+    "jsEngine": "hermes",
     "orientation": "portrait",
     "icon": "./assets/gitam-logo-circle.png",
     "userInterfaceStyle": "light",
+    "packagerOpts": {
+      "minify": true
+    },
     "splash": {
       "image": "./assets/gitam-logo-circle.png",
       "resizeMode": "contain",

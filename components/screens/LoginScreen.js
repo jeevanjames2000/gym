@@ -14,7 +14,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("502849");
   const [password, setPassword] = useState("1234");
-  const [error, setError] = useState(false);
 
   const storeData = async () => {
     try {
@@ -26,7 +25,6 @@ const LoginScreen = ({ navigation }) => {
       storeData();
       navigation.navigate("Home");
     } else {
-      setError(true);
       Alert.alert(
         "Invalid Credentials",
         "Please enter valid details",
@@ -96,7 +94,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 20,
-    backgroundColor: "#f2f2f2", // optional: to give a background color
+    backgroundColor: "#f2f2f2",
   },
   imageContainer: {
     flex: 1,

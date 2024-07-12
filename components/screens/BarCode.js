@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BarCode = ({ route, navigation }) => {
+const BarCode = () => {
   const [slotsdata, setSlotsData] = useState([]);
   const [storage, setStorage] = useState(null);
   const [resLoading, setResLoading] = useState(false);

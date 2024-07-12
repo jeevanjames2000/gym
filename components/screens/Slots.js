@@ -13,11 +13,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-const Slots = ({ route, navigation }) => {
+const Slots = ({ navigation }) => {
   const [slotsdata, setSlotsData] = useState([]);
-  const [isDataFetched, setIsDataFetched] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);
 
@@ -88,7 +86,6 @@ const Slots = ({ route, navigation }) => {
             setError(data);
             setIsLoading(false);
           }
-          setIsDataFetched(true);
         } catch (error) {
           setError(error);
           setIsLoading(false);

@@ -74,22 +74,6 @@ const HomeScreen = ({ navigation = {} }) => {
     }
   };
   const [storage, setStorage] = useState(null);
-  const handleDelete = async () => {
-    const regdNo = await AsyncStorage.getItem("myKey");
-
-    const deleteResponse = await fetch(
-      `https://g-gym-backend.onrender.com/slot/gym/deleteGymBookingsByRegdNo/${regdNo}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-    const res = deleteResponse;
-    if (res.status == 200) {
-    }
-  };
 
   useEffect(() => {
     const fetchData = async () => {

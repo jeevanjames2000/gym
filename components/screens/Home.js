@@ -18,7 +18,7 @@ const Home = ({ navigation }) => {
       <SafeAreaView style={styles.safearea}>
         <View style={styles.headerContainer}>
           <View style={styles.header}>
-            <Text style={styles.headerText}>G-Gym</Text>
+            <Text style={styles.headerText}>Gsports</Text>
             <Image
               source={require("../../assets/Ellipse 12.png")}
               style={styles.headerImage}
@@ -34,16 +34,28 @@ const Home = ({ navigation }) => {
           <View style={styles.iconsContainer}>
             <TouchableOpacity
               style={styles.iconWrapper}
-              onPress={() => handleNavigate("Schedules")}
+              onPress={() => handleNavigate("Gym")}
             >
               <Ionicons
-                name="timer-outline"
+                name="fitness-outline"
+                size={50}
+                color="#007367"
+                style={styles.icon}
+              />
+              <Text style={{ color: "#007367", fontWeight: "bold" }}>Gym</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconWrapper}
+              onPress={() => handleNavigate("Stadium")}
+            >
+              <Ionicons
+                name="basketball-outline"
                 size={50}
                 color="#007367"
                 style={styles.icon}
               />
               <Text style={{ color: "#007367", fontWeight: "bold" }}>
-                Schedules
+                Stadium
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -58,20 +70,6 @@ const Home = ({ navigation }) => {
               />
               <Text style={{ color: "#007367", fontWeight: "bold" }}>
                 My Slots
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.iconWrapper}
-              onPress={() => handleNavigate("BarCode")}
-            >
-              <Ionicons
-                name="barcode-outline"
-                size={50}
-                color="#007367"
-                style={styles.icon}
-              />
-              <Text style={{ color: "#007367", fontWeight: "bold" }}>
-                BarCode
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -100,18 +98,33 @@ const Home = ({ navigation }) => {
               />
               <Text style={{ color: "#007367", fontWeight: "bold" }}>Help</Text>
             </TouchableOpacity>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.iconWrapper}
-              onPress={() => handleNavigate("Login")}
+              onPress={() => handleNavigate("BarCode")}
             >
               <Ionicons
-                name="log-out-outline"
+                name="barcode-outline"
                 size={50}
                 color="#007367"
                 style={styles.icon}
               />
               <Text style={{ color: "#007367", fontWeight: "bold" }}>
-                Logout
+                BarCode
+              </Text>
+            </TouchableOpacity> */}
+
+            <TouchableOpacity
+              style={styles.iconWrapper}
+              // onPress={() => handleNavigate("Login")}
+            >
+              <Ionicons
+                name="timer-outline"
+                size={50}
+                color="#007367"
+                style={styles.icon}
+              />
+              <Text style={{ color: "#007367", fontWeight: "bold" }}>
+                History
               </Text>
             </TouchableOpacity>
           </View>

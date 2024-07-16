@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const Slots = ({ navigation }) => {
   const [slotsdata, setSlotsData] = useState([]);
+  console.log("slotsdata: ", slotsdata);
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);
@@ -22,7 +23,7 @@ const Slots = ({ navigation }) => {
   const isSameDate = (slot) => {
     const now = new Date();
     const currentDateString = now.toISOString().split("T")[0];
-    const startDateString = slot.start_date.split("T")[0];
+    const startDateString = slot.generated_date.split("T")[0];
 
     return currentDateString === startDateString;
   };

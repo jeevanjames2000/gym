@@ -11,36 +11,36 @@ import {
   ActivityIndicator,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import moment from "moment";
+
 const HomeScreen = ({ navigation = {} }) => {
+  const [selectedDate, setSelectedDate] = useState(moment());
+  const [dates, setDates] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [datePickerVisible, setDatePickerVisible] = useState(false);
   const [open, setOpen] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [bookedSlots, setBookedSlots] = useState([]);
   const [slotsdata, setSlotsData] = useState([]);
+  console.log("slotsdata: ", slotsdata);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [storeErr, setStoreErr] = useState([]);
   const [resLoading, setResLoading] = useState(false);
-  const [value, setValue] = useState("GYM");
+  const [value, setValue] = useState("selectLocation");
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
   const [items, setItems] = useState([
+    { label: "Select Location", value: "selectLocation" },
     { label: "GYM", value: "GYM" },
     { label: "Block-C", value: "Block-C" },
     { label: "Girls Hostel", value: "Girls Hostel" },
     { label: "Campus", value: "Campus" },
   ]);
-  const onDateChange = (event, date) => {
-    const currentDate = date || selectedDate;
-    setSelectedDate(currentDate);
-    hideDatePicker();
-  };
+
   const fetchGymSchedules = async (location, date) => {
     try {
       setIsLoading(true);
@@ -92,7 +92,6 @@ const HomeScreen = ({ navigation = {} }) => {
       const timeout = setTimeout(() => {
         if (isLoading) {
           setIsLoading(false);
-          setError(true);
         }
       }, 10000);
 
@@ -103,9 +102,13 @@ const HomeScreen = ({ navigation = {} }) => {
   }, [value]);
 
   useEffect(() => {
-    const filterTimeSlots = () => {
+    const categorizeTimeSlots = () => {
       const currentTime = new Date();
-      return slotsdata.map((slot) => {
+      const morningSlots = [];
+      const afternoonSlots = [];
+      const eveningSlots = [];
+
+      slotsdata.forEach((slot) => {
         const slotTimeParts = slot.start_time.split(" ");
         let [hours, minutes] = slotTimeParts[0].split(":");
         const modifier = slotTimeParts[1];
@@ -118,22 +121,33 @@ const HomeScreen = ({ navigation = {} }) => {
         }
         const slotTime = new Date(currentTime);
         slotTime.setHours(hours, minutes, 0, 0);
-        return {
+
+        const newSlot = {
           ...slot,
           end_time: slot.end_time,
           disabled: slotTime <= currentTime,
           booked: bookedSlots.includes(slot.start_time),
         };
+
+        if (hours < 12) {
+          morningSlots.push(newSlot);
+        } else if (hours < 18) {
+          afternoonSlots.push(newSlot);
+        } else {
+          eveningSlots.push(newSlot);
+        }
+      });
+
+      setAvailableTimeSlots({
+        morning: morningSlots,
+        afternoon: afternoonSlots,
+        evening: eveningSlots,
       });
     };
-    setAvailableTimeSlots(filterTimeSlots());
-  }, [slotsdata, bookedSlots, value]);
-  const showDatePicker = () => {
-    setDatePickerVisible(true);
-  };
-  const hideDatePicker = () => {
-    setDatePickerVisible(false);
-  };
+
+    categorizeTimeSlots();
+  }, [slotsdata, bookedSlots]);
+
   const handleValueChange = (newValue) => {
     setValue(newValue);
     fetchGymSchedules(newValue, selectedDate);
@@ -203,31 +217,41 @@ const HomeScreen = ({ navigation = {} }) => {
     setSlotConfirmationVisible(false);
     navigation.navigate("Home");
   };
-  const renderTimeSlots = () => {
-    return availableTimeSlots.map((slot) => (
-      <TouchableOpacity
-        key={slot.time}
-        onPress={() => handleTimeSlotSelect(slot)}
-        style={[
-          styles.slot,
-          {
-            borderColor: selectedTime === slot.time ? "#007367" : "#000",
-            backgroundColor:
-              selectedTime === slot.time ? "#007367" : "transparent",
-            opacity: slot.disabled ? 0.5 : 1,
-          },
-        ]}
-        disabled={slot.disabled}
-      >
-        <Text style={styles.slotText}>{slot.time}</Text>
-        <TouchableOpacity
-          style={styles.confirmButton}
-          onPress={() => handleTimeSlotSelect(slot)}
-        >
-          <Text style={styles.checkmark}>✓</Text>
-        </TouchableOpacity>
-      </TouchableOpacity>
-    ));
+  const renderTimeSlots = (timeSlots) => {
+    const rows = [];
+    for (let i = 0; i < timeSlots.length; i += 3) {
+      const rowSlots = timeSlots.slice(i, i + 3);
+      rows.push(
+        <View key={i} style={styles.slotRow}>
+          {rowSlots.map((slot) => (
+            <TouchableOpacity
+              key={slot.time}
+              onPress={() => handleTimeSlotSelect(slot)}
+              style={[
+                styles.slot,
+                {
+                  borderColor: selectedTime === slot.time ? "#007367" : "#000",
+                  backgroundColor:
+                    !slot.disabled && selectedTime === slot.time
+                      ? "#007367"
+                      : slot.disabled
+                      ? "transparent"
+                      : "#007367",
+                  opacity: slot.disabled ? 0.5 : 1,
+                  cursor: slot.disabled ? "not-allowed" : "pointer",
+                },
+              ]}
+              disabled={slot.disabled}
+            >
+              <Text style={{ color: slot.disabled ? "#000" : "#fff" }}>
+                {slot.time}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      );
+    }
+    return rows;
   };
 
   const DetailItem = ({ icon, text, containerStyle }) => (
@@ -242,7 +266,7 @@ const HomeScreen = ({ navigation = {} }) => {
       <DetailItem icon="location-outline" text={value} />
       <DetailItem
         icon="calendar-outline"
-        text={selectedDate.toLocaleDateString()}
+        text={selectedDate.toISOString().split("T")[0]}
       />
       <DetailItem
         icon="checkmark-done-outline"
@@ -308,33 +332,57 @@ const HomeScreen = ({ navigation = {} }) => {
       </TouchableOpacity>
     </View>
   );
+
+  useEffect(() => {
+    const generateDates = () => {
+      let datesArray = [];
+      for (let i = 0; i < 30; i++) {
+        datesArray.push(moment().add(i, "days"));
+      }
+      setDates(datesArray);
+    };
+    generateDates();
+  }, []);
+
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+  };
   return (
     <>
       <View style={styles.container}>
         <View style={styles.topSection}>
           <View style={styles.fieldContainer}>
-            <Text style={styles.fieldLabel}>Select Date</Text>
-            <TouchableOpacity
-              onPress={showDatePicker}
-              style={styles.datePicker}
-            >
-              <Text style={styles.datePickerText}>
-                {selectedDate.toLocaleDateString()}
-              </Text>
-            </TouchableOpacity>
-            {datePickerVisible && (
-              <DateTimePicker
-                value={selectedDate}
-                mode="date"
-                is24Hour={true}
-                display="default"
-                onChange={onDateChange}
-                minimumDate={new Date()}
-              />
-            )}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {dates.map((date, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.dateItem,
+                    date.isSame(selectedDate, "day") && styles.selectedDateItem,
+                  ]}
+                  onPress={() => handleDateSelect(date)}
+                >
+                  <Text
+                    style={[
+                      styles.dayText,
+                      date.isSame(selectedDate, "day") && styles.selectedText,
+                    ]}
+                  >
+                    {date.format("dddd").charAt(0)}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.dateText,
+                      date.isSame(selectedDate, "day") && styles.selectedText,
+                    ]}
+                  >
+                    {date.format("D")}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
           <View style={styles.dropdownContainer}>
-            <Text style={styles.fieldLabel}>Select Location</Text>
             <DropDownPicker
               open={open}
               value={value}
@@ -351,19 +399,41 @@ const HomeScreen = ({ navigation = {} }) => {
           </View>
         </View>
         <View style={styles.timeSlots}>
-          <Text style={styles.title}>Select Time Slots</Text>
+          <Text style={styles.title}>Available Slots</Text>
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#007367" />
               <Text>Loading</Text>
             </View>
           ) : error ? (
-            <Text style={{ flex: 1, fontSize: 13, fontWeight: "bold" }}>
+            <Text
+              style={{
+                flex: 1,
+                fontSize: 13,
+                fontWeight: "bold",
+                color: "red",
+              }}
+            >
               No gym schedules found for the specified location and date
             </Text>
           ) : (
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {renderTimeSlots()}
+            <ScrollView
+              style={styles.scrollView}
+              showsVerticalScrollIndicator={false}
+              showsHorizontalScrollIndicator={false}
+            >
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Morning</Text>
+                {renderTimeSlots(availableTimeSlots.morning)}
+              </View>
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Afternoon</Text>
+                {renderTimeSlots(availableTimeSlots.afternoon)}
+              </View>
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Evening</Text>
+                {renderTimeSlots(availableTimeSlots.evening)}
+              </View>
             </ScrollView>
           )}
         </View>
@@ -419,33 +489,48 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   topSection: {
-    flexDirection: "column",
-    alignItems: "left",
+    justifyContent: "space-between",
     marginBottom: 20,
   },
   fieldContainer: {
     flexDirection: "column",
-    alignItems: "left",
+    alignItems: "center",
+    marginBottom: 20,
   },
   fieldLabel: {
     fontSize: 18,
     margin: 10,
   },
   datePicker: {
-    padding: 10,
-    borderWidth: 1,
-    borderRadius: 8,
-    borderColor: "#ccc",
-    minWidth: 120,
+    flex: 1,
+    padding: 0,
   },
-  datePickerText: {
+  dateItem: {
+    width: 50,
+    alignItems: "center",
+    padding: 10,
+    marginHorizontal: 5,
+    borderRadius: 5,
+  },
+  selectedDateItem: {
+    backgroundColor: "#007367",
+  },
+  dayText: {
     fontSize: 16,
+    color: "#666",
+  },
+  selectedText: {
+    color: "#fff",
+  },
+  dateText: {
+    fontSize: 18,
+    fontWeight: "bold",
   },
   dropdownContainer: {
     flexDirection: "column",
     alignItems: "left",
     marginLeft: 0,
-    minWidth: 130,
+    minWidth: 170,
   },
   dropdown: {
     height: 40,
@@ -459,23 +544,51 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     marginBottom: 20,
+    fontWeight: "700",
+    marginTop: 15,
+    zIndex: -1,
   },
   scrollViewContent: {
     paddingBottom: 20,
   },
-  slot: {
-    padding: 10,
-    marginVertical: 5,
-    borderWidth: 1,
-    borderRadius: 5,
+  slotRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  slotContainer: {
+    flexDirection: "row",
+    flexWrap: "nowrap",
+  },
+  slot: {
+    flex: 1,
+    marginHorizontal: 5,
+    padding: 10,
+    borderRadius: 5,
     alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
   },
   slotText: {
     fontSize: 16,
+  },
+  card: {
+    marginBottom: 20,
+    padding: 16,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontSize: 18,
+    marginBottom: 10,
+    fontWeight: "500",
   },
   checkbox: {
     width: 20,

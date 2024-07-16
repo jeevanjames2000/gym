@@ -10,6 +10,7 @@ import Scanner from "./components/screens/Scanner";
 import Home from "./components/screens/Home";
 import Slots from "./components/screens/Slots";
 import Help from "./components/screens/Help";
+import Stadium from "./components/screens/Stadium";
 const Stack = createNativeStackNavigator();
 export default function App() {
   return (
@@ -39,7 +40,7 @@ export default function App() {
           />
 
           <Stack.Screen
-            name="Schedules"
+            name="Gym"
             component={HomeScreen}
             options={{ headerShown: true }}
           />
@@ -52,6 +53,11 @@ export default function App() {
           <Stack.Screen
             name="BarCode"
             component={BarCode}
+            options={{ headerShown: true }}
+          />
+          <Stack.Screen
+            name="Stadium"
+            component={Stadium}
             options={{ headerShown: true }}
           />
           <Stack.Screen

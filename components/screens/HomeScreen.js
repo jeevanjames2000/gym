@@ -47,7 +47,7 @@ const HomeScreen = ({ navigation = {} }) => {
       setError(false);
       const formattedDate = date.toISOString().split("T")[0];
       const response = await fetch(
-        `https://g-gym-backend.onrender.com/slot/gym/getGymSchedulesByLocationMongo/${location}/${formattedDate}`
+        `https://sports1.gitam.edu/slot/gym/getGymSchedulesByLocation/${location}/${formattedDate}`
       );
       const data = await response.json();
       if (data.length === 0) {
@@ -169,7 +169,7 @@ const HomeScreen = ({ navigation = {} }) => {
     if (selectedTime && !bookedSlots.includes(selectedTime)) {
       const formattedDate = selectedDate.toISOString().split("T")[0];
       const apiUrl =
-        "https://g-gym-backend.onrender.com/slot/gym/insertGymMasterSchedulingMongo";
+        "https://sports1.gitam.edu/slot/gym/insertGymMasterSchedulingSQL";
       const bookingData = {
         Gym_scheduling_id: slottime.Gym_scheduling_id,
         regdNo: storage,
@@ -336,7 +336,7 @@ const HomeScreen = ({ navigation = {} }) => {
   useEffect(() => {
     const generateDates = () => {
       let datesArray = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = -10; i < 30; i++) {
         datesArray.push(moment().add(i, "days"));
       }
       setDates(datesArray);

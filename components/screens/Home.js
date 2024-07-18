@@ -18,7 +18,7 @@ const Home = ({ navigation }) => {
       <SafeAreaView style={styles.safearea}>
         <View style={styles.headerContainer}>
           <View style={styles.header}>
-            <Text style={styles.headerText}>Gsports</Text>
+            <Text style={styles.headerText}>G-Sports</Text>
             <Image
               source={require("../../assets/Ellipse 12.png")}
               style={styles.headerImage}

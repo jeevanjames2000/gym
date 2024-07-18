@@ -24,7 +24,7 @@ const BarCode = () => {
           if (storage) {
             setResLoading(true);
             const response = await fetch(
-              `https://g-gym-backend.onrender.com/slot/gym/getGymBookingsByRegdNo/${storage}`
+              `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`
             );
             const data = await response.json();
 

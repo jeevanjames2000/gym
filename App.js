@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from "react-native";
 import LoginScreen from "./components/screens/LoginScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import BarCode from "./components/screens/BarCode";
 import Profile from "./components/screens/Profile";
 import HomeScreen from "./components/screens/HomeScreen";
 import Scanner from "./components/screens/Scanner";
@@ -11,6 +10,7 @@ import Home from "./components/screens/Home";
 import Slots from "./components/screens/Slots";
 import Help from "./components/screens/Help";
 import Stadium from "./components/screens/Stadium";
+import History from "./components/screens/History";
 const Stack = createNativeStackNavigator();
 export default function App() {
   return (
@@ -32,13 +32,11 @@ export default function App() {
             component={LoginScreen}
             options={{ headerShown: false }}
           />
-
           <Stack.Screen
             name="Home"
             component={Home}
             options={{ headerShown: false }}
           />
-
           <Stack.Screen
             name="Gym"
             component={HomeScreen}
@@ -48,12 +46,6 @@ export default function App() {
             name="Scanner"
             component={Scanner}
             options={{ headerShown: false }}
-          />
-
-          <Stack.Screen
-            name="BarCode"
-            component={BarCode}
-            options={{ headerShown: true }}
           />
           <Stack.Screen
             name="Stadium"
@@ -73,6 +65,11 @@ export default function App() {
           <Stack.Screen
             name="Profile"
             component={Profile}
+            options={{ headerShown: true }}
+          />
+          <Stack.Screen
+            name="History"
+            component={History}
             options={{ headerShown: true }}
           />
         </Stack.Navigator>

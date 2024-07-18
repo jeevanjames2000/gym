@@ -115,7 +115,7 @@ const Home = ({ navigation }) => {
 
             <TouchableOpacity
               style={styles.iconWrapper}
-              // onPress={() => handleNavigate("Login")}
+              onPress={() => handleNavigate("History")}
             >
               <Ionicons
                 name="timer-outline"

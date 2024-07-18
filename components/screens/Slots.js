@@ -18,6 +18,7 @@ const Slots = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);
+  const [activeSlot, setActiveSlot] = useState("gym");
 
   const isSameDate = (slot) => {
     const now = new Date();
@@ -208,10 +209,68 @@ const Slots = ({ navigation }) => {
       </View>
     );
   }
+
+  const renderGymSlots = () => {
+    return slotsdata.map(renderSlotDetails);
+  };
+
+  const renderStadiumSlots = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: "#fff",
+          padding: "20",
+          alignItems: "center",
+          borderRadius: 10,
+          height: 30,
+          justifyContent: "center",
+          fontWeight: 700,
+        }}
+      >
+        <Text>No Slots Booked</Text>
+      </View>
+    );
+  };
   return (
     <View style={styles.container}>
+      <View style={styles.row}>
+        <TouchableOpacity
+          style={[styles.buttoncard, activeSlot === "gym" && styles.activeCard]}
+          onPress={() => setActiveSlot("gym")}
+        >
+          <Text
+            style={[
+              styles.cardText,
+              activeSlot === "gym" && styles.activeCardText,
+            ]}
+          >
+            GYM
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.buttoncard,
+            activeSlot === "stadium" && styles.activeCard,
+          ]}
+          onPress={() => setActiveSlot("stadium")}
+        >
+          <Text
+            style={[
+              styles.cardText,
+              activeSlot === "stadium" && styles.activeCardText,
+            ]}
+          >
+            Stadium
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {slotsdata?.map(renderSlotDetails)}
+        {activeSlot === "gym"
+          ? renderGymSlots()
+          : activeSlot === "stadium"
+          ? renderStadiumSlots()
+          : null}
       </ScrollView>
     </View>
   );
@@ -221,6 +280,38 @@ const styles = StyleSheet.create({
   imgcontainer: {
     padding: 20,
     alignItems: "center",
+  },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+    minWidth: 100,
+  },
+  buttoncard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 10,
+    width: "100%",
+    marginBottom: 15,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    elevation: 2,
+    justifyContent: "center",
+    alignItems: "center",
+    marginHorizontal: 5,
+  },
+  activeCard: {
+    backgroundColor: "#007367",
+  },
+
+  cardText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  activeCardText: {
+    color: "#fff",
   },
   container: {
     flex: 1,

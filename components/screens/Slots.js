@@ -15,7 +15,6 @@ import { Ionicons } from "@expo/vector-icons";
 
 const Slots = ({ navigation }) => {
   const [slotsdata, setSlotsData] = useState([]);
-  console.log("slotsdata: ", slotsdata);
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);

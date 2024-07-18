@@ -179,7 +179,7 @@ const HomeScreen = ({ navigation = {} }) => {
         Location: slottime.Location,
         campus: slottime.campus,
       };
-      console.log("bookingData: ", bookingData);
+
       try {
         const response = await fetch(apiUrl, {
           method: "POST",

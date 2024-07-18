@@ -25,7 +25,6 @@ const HomeScreen = ({ navigation = {} }) => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [bookedSlots, setBookedSlots] = useState([]);
   const [slotsdata, setSlotsData] = useState([]);
-  console.log("slotsdata: ", slotsdata);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [storeErr, setStoreErr] = useState([]);
@@ -46,8 +45,9 @@ const HomeScreen = ({ navigation = {} }) => {
       setIsLoading(true);
       setError(false);
       const formattedDate = date.toISOString().split("T")[0];
+
       const response = await fetch(
-        `https://sports1.gitam.edu/slot/gym/getGymSchedulesByLocation/${location}/${formattedDate}`
+        `https://sports1.gitam.edu/api/gym/getGymSchedulesByLocation/${location}/${formattedDate}`
       );
       const data = await response.json();
       if (data.length === 0) {
@@ -171,7 +171,7 @@ const HomeScreen = ({ navigation = {} }) => {
       const apiUrl =
         "https://sports1.gitam.edu/slot/gym/insertGymMasterSchedulingSQL";
       const bookingData = {
-        Gym_scheduling_id: slottime.Gym_scheduling_id,
+        Gym_sheduling_id: slottime.Gym_sheduling_id,
         regdNo: storage,
         start_date: formattedDate,
         start_time: slottime.start_time,
@@ -179,6 +179,7 @@ const HomeScreen = ({ navigation = {} }) => {
         Location: slottime.Location,
         campus: slottime.campus,
       };
+      console.log("bookingData: ", bookingData);
       try {
         const response = await fetch(apiUrl, {
           method: "POST",
@@ -336,7 +337,7 @@ const HomeScreen = ({ navigation = {} }) => {
   useEffect(() => {
     const generateDates = () => {
       let datesArray = [];
-      for (let i = -10; i < 30; i++) {
+      for (let i = 0; i < 30; i++) {
         datesArray.push(moment().add(i, "days"));
       }
       setDates(datesArray);
@@ -424,14 +425,47 @@ const HomeScreen = ({ navigation = {} }) => {
             >
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Morning</Text>
+                {availableTimeSlots?.morning?.length === 0 && (
+                  <Text
+                    style={{
+                      color: "red",
+                      textAlign: "center",
+                      fontWeight: "700",
+                    }}
+                  >
+                    No Slots Available
+                  </Text>
+                )}
                 {renderTimeSlots(availableTimeSlots.morning)}
               </View>
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Afternoon</Text>
+                {availableTimeSlots?.afternoon?.length === 0 && (
+                  <Text
+                    style={{
+                      color: "red",
+                      textAlign: "center",
+                      fontWeight: "700",
+                    }}
+                  >
+                    No Slots Available
+                  </Text>
+                )}
                 {renderTimeSlots(availableTimeSlots.afternoon)}
               </View>
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Evening</Text>
+                {availableTimeSlots?.evening?.length === 0 && (
+                  <Text
+                    style={{
+                      color: "red",
+                      textAlign: "center",
+                      fontWeight: "700",
+                    }}
+                  >
+                    No Slots Available
+                  </Text>
+                )}
                 {renderTimeSlots(availableTimeSlots.evening)}
               </View>
             </ScrollView>

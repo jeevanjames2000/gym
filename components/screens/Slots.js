@@ -113,7 +113,7 @@ const Slots = ({ navigation }) => {
           onPress: () => {
             const data = "Update";
             handleDelete();
-            navigation.navigate("Schedules");
+            navigation.navigate("Gym");
           },
         },
       ],

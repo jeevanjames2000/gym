@@ -20,24 +20,82 @@ const Profile = ({ navigation }) => {
     fetchData();
   }, []);
   return (
-    <>
-      <View
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          padding: 10,
-        }}
-      >
+    <View style={styles.container}>
+      <View style={styles.header}>
         <Image
           source={require("../../assets/Ellipse 12.png")}
-          style={{ height: 150, width: 150, objectFit: "contain" }}
+          style={styles.profileImage}
           resizeMode="center"
         />
-        <Text style={{ fontSize: 34, fontWeight: "bold" }}>
-          Cameron Williams
-        </Text>
-        <Text style={{ fontSize: 24, fontWeight: "500" }}>{storage}</Text>
+        <Text style={styles.name}>Cameron Williams</Text>
+        <Text style={styles.storage}>{storage}</Text>
+      </View>
 
+      <View style={styles.content}>
+        <TouchableOpacity
+          style={styles.list}
+          onPress={() => navigation.navigate("Help Center")}
+        >
+          <View style={styles.listContent}>
+            <Ionicons
+              name="information-circle-outline"
+              size={34}
+              color="#007367"
+              style={styles.listIcons}
+            />
+            <Text style={styles.listText}>Help Center</Text>
+          </View>
+          <Ionicons
+            name="arrow-forward"
+            size={24}
+            color="#007367"
+            style={styles.listIcons}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.list}
+          onPress={() => navigation.navigate("Privacy Policy")}
+        >
+          <View style={styles.listContent}>
+            <Ionicons
+              name="settings-outline"
+              size={34}
+              color="#007367"
+              style={styles.listIcons}
+            />
+            <Text style={styles.listText}>Privacy Policy</Text>
+          </View>
+          <Ionicons
+            name="arrow-forward"
+            size={24}
+            color="#007367"
+            style={styles.listIcons}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.list}
+          // onPress={() => navigation.navigate("Privacy Policy")}
+        >
+          <View style={styles.listContent}>
+            <Ionicons
+              name="accessibility-outline"
+              size={34}
+              color="#007367"
+              style={styles.listIcons}
+            />
+            <Text style={styles.listText}>Dummy</Text>
+          </View>
+          <Ionicons
+            name="arrow-forward"
+            size={24}
+            color="#007367"
+            style={styles.listIcons}
+          />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.footer}>
         <TouchableOpacity style={styles.logout} onPress={handleLogout}>
           <Text style={styles.buttonText}>Logout</Text>
           <Ionicons
@@ -48,102 +106,44 @@ const Profile = ({ navigation }) => {
           />
         </TouchableOpacity>
       </View>
-      <View
-        style={{
-          flex: 0,
-          justifyContent: "flex-start",
-          alignItems: "stretch",
-        }}
-      >
-        <TouchableOpacity
-          style={styles.list}
-          onPress={() => navigation.navigate("Profile")}
-        >
-          <View style={styles.listContent}>
-            <Ionicons
-              name="person-circle-outline"
-              size={34}
-              color="#007367"
-              style={styles.listicons}
-            />
-            <Text style={styles.listText}>Personal Info</Text>
-          </View>
-          <Ionicons
-            name="arrow-forward"
-            size={24}
-            color="#007367"
-            style={styles.listicons}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.list}
-          onPress={() => navigation.navigate("Help Center")}
-        >
-          <View style={styles.listContent}>
-            <Ionicons
-              name="information-circle-outline"
-              size={34}
-              color="#007367"
-              style={styles.listicons}
-            />
-            <Text style={styles.listText}>Help Center</Text>
-          </View>
-          <Ionicons
-            name="arrow-forward"
-            size={24}
-            color="#007367"
-            style={styles.listicons}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.list}>
-          <View style={styles.listContent}>
-            <Ionicons
-              name="settings-outline"
-              size={34}
-              color="#007367"
-              style={styles.listicons}
-            />
-            <Text style={styles.listText}>Privacy Policy</Text>
-          </View>
-          <Ionicons
-            name="arrow-forward"
-            size={24}
-            color="#007367"
-            style={styles.listicons}
-          />
-        </TouchableOpacity>
-      </View>
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  icon: {
-    color: "#fff",
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: "#fff",
   },
-  logout: {
-    width: "100%",
-    height: 58,
-    flexDirection: "row",
-    backgroundColor: "#007367",
+  header: {
     justifyContent: "center",
-    borderRadius: 10,
     alignItems: "center",
-    top: 470,
+    padding: 10,
   },
-  buttonText: {
-    color: "#ffff",
+  profileImage: {
+    height: 150,
+    width: 150,
+    objectFit: "contain",
+  },
+  name: {
+    fontSize: 34,
+    fontWeight: "bold",
+  },
+  storage: {
     fontSize: 24,
-    textAlign: "center",
-    marginRight: 10,
+    fontWeight: "500",
+  },
+  content: {
+    flex: 1,
+    justifyContent: "flex-start",
+    alignItems: "stretch",
   },
   list: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    margin: 10,
+    margin: 5,
     padding: 15,
     borderWidth: 1,
     borderColor: "#ccc",
@@ -159,13 +159,35 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  listicons: {
+  listIcons: {
     paddingRight: 10,
   },
   listText: {
     fontSize: 18,
     color: "#000",
     marginLeft: 10,
+  },
+  footer: {
+    justifyContent: "flex-end",
+    marginBottom: 10,
+  },
+  logout: {
+    width: "100%",
+    height: 58,
+    flexDirection: "row",
+    backgroundColor: "#007367",
+    justifyContent: "center",
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 24,
+    textAlign: "center",
+    marginRight: 10,
+  },
+  icon: {
+    color: "#fff",
   },
 });
 

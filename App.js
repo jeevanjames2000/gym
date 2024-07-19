@@ -11,6 +11,7 @@ import Slots from "./components/screens/Slots";
 import Help from "./components/screens/Help";
 import Stadium from "./components/screens/Stadium";
 import History from "./components/screens/History";
+import Privacy from "./components/screens/Privacy";
 const Stack = createNativeStackNavigator();
 export default function App() {
   return (
@@ -70,6 +71,11 @@ export default function App() {
           <Stack.Screen
             name="History"
             component={History}
+            options={{ headerShown: true }}
+          />
+          <Stack.Screen
+            name="Privacy Policy"
+            component={Privacy}
             options={{ headerShown: true }}
           />
         </Stack.Navigator>

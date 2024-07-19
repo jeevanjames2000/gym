@@ -1,7 +1,6 @@
 {
   "name": "gym",
   "version": "1.0.0",
-  "main": "expo/AppEntry.js",
   "scripts": {
     "start": "npx expo start",
     "android": "npx expo run:android",
@@ -12,19 +11,26 @@
     "@expo/vector-icons": "^14.0.2",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/datetimepicker": "8.0.1",
-    "@react-navigation/native": "^6.1.17",
-    "@react-navigation/native-stack": "^6.9.26",
-    "expo": "~51.0.17",
-    "expo-camera": "~15.0.13",
+    "@react-native-community/masked-view": "^0.1.11",
+    "@react-navigation/native": "^6.1.18",
+    "@react-navigation/native-stack": "^6.10.1",
+    "expo": "~51.0.21",
+    "expo-camera": "~15.0.14",
+    "expo-constants": "~16.0.2",
+    "expo-linking": "~6.3.1",
+    "expo-router": "~3.5.18",
     "expo-status-bar": "~1.12.1",
     "moment": "^2.30.1",
     "react": "18.2.0",
     "react-native": "0.74.3",
     "react-native-dropdown-picker": "^5.4.6",
+    "react-native-gesture-handler": "~2.16.1",
     "react-native-neat-date-picker": "^1.4.12",
-    "react-native-safe-area-context": "4.10.1",
+    "react-native-reanimated": "~3.10.1",
+    "react-native-safe-area-context": "4.10.5",
     "react-native-screens": "3.31.1",
-    "react-native-ui-datepicker": "^2.0.3"
+    "react-native-ui-datepicker": "^2.0.3",
+    "react-navigation": "^5.0.0"
   },
   "private": true
 }

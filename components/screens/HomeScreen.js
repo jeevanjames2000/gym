@@ -45,9 +45,15 @@ const HomeScreen = ({ navigation = {} }) => {
       setIsLoading(true);
       setError(false);
       const formattedDate = date.toISOString().split("T")[0];
-
+      const value = await AsyncStorage.getItem("token");
       const response = await fetch(
-        `https://sports1.gitam.edu/api/gym/getGymSchedulesByLocation/${location}/${formattedDate}`
+        `https://sports1.gitam.edu/api/gym/getGymSchedulesByLocation/${location}/${formattedDate}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${value}`,
+          },
+        }
       );
       const data = await response.json();
       if (data.length === 0) {
@@ -181,10 +187,12 @@ const HomeScreen = ({ navigation = {} }) => {
       };
 
       try {
+        const value = await AsyncStorage.getItem("token");
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${value}`,
           },
           body: JSON.stringify(bookingData),
         });
@@ -337,7 +345,7 @@ const HomeScreen = ({ navigation = {} }) => {
   useEffect(() => {
     const generateDates = () => {
       let datesArray = [];
-      for (let i = 0; i < 30; i++) {
+      for (let i = -10; i < 30; i++) {
         datesArray.push(moment().add(i, "days"));
       }
       setDates(datesArray);

@@ -15,24 +15,50 @@ const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("502849");
   const [password, setPassword] = useState("1234");
 
-  const storeData = async () => {
+  const storeData = async (token) => {
     try {
       await AsyncStorage.setItem("myKey", username);
+      await AsyncStorage.setItem("token", token);
     } catch (e) {}
   };
-  const handleLogin = () => {
-    if (username === "502849") {
-      storeData();
-      navigation.navigate("Home");
-    } else {
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("https://sports1.gitam.edu/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          regdNo: username,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        await storeData(data.token);
+        navigation.navigate("Home");
+      } else {
+        Alert.alert(
+          "Invalid Credentials",
+          "Please enter valid details",
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "OK",
+            },
+          ],
+          { cancelable: false }
+        );
+      }
+    } catch (error) {
       Alert.alert(
-        "Invalid Credentials",
-        "Please enter valid details",
+        "Login Error",
+        "An error occurred during login. Please try again later.",
         [
-          {
-            text: "Cancel",
-            style: "cancel",
-          },
           {
             text: "OK",
           },

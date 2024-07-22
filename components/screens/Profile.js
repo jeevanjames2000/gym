@@ -4,8 +4,20 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Profile = ({ navigation }) => {
-  const handleLogout = () => {
-    navigation.navigate("Login");
+  const handleLogout = async () => {
+    try {
+      const value = await AsyncStorage.getItem("token");
+      const response = await fetch("https://sports1.gitam.edu/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${value}`,
+        },
+      });
+      if (response.status === 200) {
+        navigation.navigate("Login");
+      }
+    } catch (error) {}
   };
   const [storage, setStorage] = useState(null);
 
@@ -15,7 +27,7 @@ const Profile = ({ navigation }) => {
       if (value !== null) {
         setStorage(value);
       }
-    };
+    }; 
 
     fetchData();
   }, []);

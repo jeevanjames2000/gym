@@ -35,6 +35,7 @@ const Slots = ({ navigation }) => {
 
   const handleDelete = async () => {
     const regdNo = await AsyncStorage.getItem("myKey");
+    const value = await AsyncStorage.getItem("token");
 
     const deleteResponse = await fetch(
       `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo/${regdNo}`,
@@ -42,6 +43,7 @@ const Slots = ({ navigation }) => {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${value}`,
         },
       }
     );
@@ -67,9 +69,16 @@ const Slots = ({ navigation }) => {
         try {
           setIsLoading(true);
           setError(null);
+          const value = await AsyncStorage.getItem("token");
 
           const response = await fetch(
-            `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`
+            `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`,
+            {
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${value}`,
+              },
+            }
           );
           const data = await response.json();
 

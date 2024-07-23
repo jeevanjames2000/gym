@@ -29,12 +29,11 @@ const HomeScreen = ({ navigation = {} }) => {
   const [error, setError] = useState(false);
   const [storeErr, setStoreErr] = useState([]);
   const [resLoading, setResLoading] = useState(false);
-  const [value, setValue] = useState("selectLocation");
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
+  const [value, setValue] = useState("Gym");
   const [items, setItems] = useState([
-    { label: "Select Location", value: "selectLocation" },
-    { label: "GYM", value: "GYM" },
+    { label: "Gym", value: "GYM" },
     { label: "Block-C", value: "Block-C" },
     { label: "Girls Hostel", value: "Girls Hostel" },
     { label: "Campus", value: "Campus" },
@@ -391,20 +390,26 @@ const HomeScreen = ({ navigation = {} }) => {
               ))}
             </ScrollView>
           </View>
-          <View style={styles.dropdownContainer}>
-            <DropDownPicker
-              open={open}
-              value={value}
-              items={items}
-              setOpen={setOpen}
-              setValue={setValue}
-              setItems={setItems}
-              style={styles.dropdown}
-              containerStyle={styles.dropdownContainerStyle}
-              labelStyle={styles.dropdownLabel}
-              // textStyle={styles.dropdownText}
-              onChangeValue={handleValueChange}
-            />
+          <View style={styles.locContainer}>
+            {items.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.loccard,
+                  item.value === value && styles.selectedCard,
+                ]}
+                onPress={() => handleValueChange(item.value)}
+              >
+                <Text
+                  style={[
+                    styles.cardText,
+                    item.value === value && styles.selectedCardText,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         </View>
         <View style={styles.timeSlots}>
@@ -529,6 +534,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+  },
+  locContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  loccard: {
+    flex: 1,
+    marginHorizontal: 5,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  selectedCard: {
+    backgroundColor: "#007367",
+  },
+  cardText: {
+    fontSize: 16,
+    // fontWeight: "500",
+    color: "#333",
+  },
+  selectedCardText: {
+    color: "#fff",
   },
   topSection: {
     justifyContent: "space-between",

@@ -18,7 +18,6 @@ const Slots = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);
-  const [activeSlot, setActiveSlot] = useState("gym");
 
   const isSameDate = (slot) => {
     const now = new Date();
@@ -199,93 +198,6 @@ const Slots = ({ navigation }) => {
     </View>
   );
 
-  // stadium slot
-
-  const renderStadiumDetails = (slot, index) => (
-    <View key={index} style={styles.card}>
-      {isSameDate(slot) && (
-        <TouchableOpacity style={styles.editButton} onPress={handleUpdatePress}>
-          <Text style={styles.updateText}>Update</Text>
-        </TouchableOpacity>
-      )}
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="location-outline"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>{"KMR Indore Stadium"}</Text>
-      </View>
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="football"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>{"Court 1"}</Text>
-      </View>
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="time-outline"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>
-          {"4:00 PM"} - {"5:00 PM"}
-        </Text>
-      </View>
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="person-outline"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>{"502849"}</Text>
-      </View>
-
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="calendar-outline"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>
-          {"2024-07-19"} - {"2024-07-19"}
-        </Text>
-      </View>
-      <View style={styles.imgcontainer}>
-        <Image
-          style={{ width: 300, height: 300 }}
-          source={{ uri: slot.qr_code }}
-        />
-      </View>
-    </View>
-  );
-
-  if (isLoading) {
-    return (
-      <View style={styles.modalLoading}>
-        <ActivityIndicator size="large" color="#007367" />
-        <Text>Loading</Text>
-      </View>
-    );
-  }
-
-  if (!isLoading && (slotsdata.length === 0 || error)) {
-    return (
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-          No Slots Booked
-        </Text>
-      </View>
-    );
-  }
-
   if (isLoading) {
     return (
       <View style={styles.modalLoading}>
@@ -308,67 +220,11 @@ const Slots = ({ navigation }) => {
   const renderGymSlots = () => {
     return slotsdata.map(renderSlotDetails);
   };
-  const renderStadiumSlots = () => {
-    return slotsdata.map(renderStadiumDetails);
-  };
 
-  // const renderStadiumSlots = () => {
-  //   return (
-  //     <View
-  //       style={{
-  //         backgroundColor: "#fff",
-  //         padding: "20",
-  //         alignItems: "center",
-  //         borderRadius: 10,
-  //         height: 30,
-  //         justifyContent: "center",
-  //         fontWeight: 700,
-  //       }}
-  //     >
-  //       <Text>No Slots Booked</Text>
-  //     </View>
-  //   );
-  // };
   return (
     <View style={styles.container}>
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={[styles.buttoncard, activeSlot === "gym" && styles.activeCard]}
-          onPress={() => setActiveSlot("gym")}
-        >
-          <Text
-            style={[
-              styles.cardText,
-              activeSlot === "gym" && styles.activeCardText,
-            ]}
-          >
-            GYM
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.buttoncard,
-            activeSlot === "stadium" && styles.activeCard,
-          ]}
-          onPress={() => setActiveSlot("stadium")}
-        >
-          <Text
-            style={[
-              styles.cardText,
-              activeSlot === "stadium" && styles.activeCardText,
-            ]}
-          >
-            Stadium
-          </Text>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {activeSlot === "gym"
-          ? renderGymSlots()
-          : activeSlot === "stadium"
-          ? renderStadiumSlots()
-          : null}
+        {renderGymSlots()}
       </ScrollView>
     </View>
   );
@@ -379,38 +235,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
   },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
-    minWidth: 100,
-  },
-  buttoncard: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 10,
-    width: "100%",
-    marginBottom: 15,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    elevation: 2,
-    justifyContent: "center",
-    alignItems: "center",
-    marginHorizontal: 5,
-  },
-  activeCard: {
-    backgroundColor: "#007367",
-  },
 
-  cardText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  activeCardText: {
-    color: "#fff",
-  },
   container: {
     flex: 1,
     padding: 20,

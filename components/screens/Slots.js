@@ -142,6 +142,17 @@ const Slots = ({ navigation }) => {
       )}
       <View style={styles.detailContainer}>
         <Ionicons
+          name={slot.start_time.slice(-2) === "AM" ? "sunny" : "partly-sunny"}
+          size={24}
+          color="#3498db"
+          style={styles.icon}
+        />
+        <Text style={styles.detailText}>
+          {slot.start_time.slice(-2) === "AM" ? "Morning" : "Evening"}
+        </Text>
+      </View>
+      <View style={styles.detailContainer}>
+        <Ionicons
           name="time-outline"
           size={24}
           color="#3498db"

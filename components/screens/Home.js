@@ -66,7 +66,7 @@ const triggerStyles = {
 };
 
 const optionsStyles = {
-  optionsContainer: {
+  optionsContainer: {       
     backgroundColor: "#007367",
     padding: 5,
     borderRadius: 5,

@@ -39,6 +39,12 @@ const HomeScreen = ({ navigation = {} }) => {
     { label: "Campus", value: "Campus" },
   ]);
 
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+
+  const toggleTooltip = () => {
+    setTooltipVisible(!tooltipVisible);
+  };
+
   const fetchGymSchedules = async (location, date) => {
     try {
       setIsLoading(true);
@@ -68,6 +74,8 @@ const HomeScreen = ({ navigation = {} }) => {
           Location: slot.Location,
           occupied: slot.occupied,
           disabled: new Date(slot.start_time) <= new Date(),
+          noAvailableSlots: slot.available <= 0,
+
           booked: bookedSlots.includes(slot.start_time),
         }));
         setSlotsData(slots);
@@ -131,13 +139,12 @@ const HomeScreen = ({ navigation = {} }) => {
           ...slot,
           end_time: slot.end_time,
           disabled: slotTime <= currentTime,
+          noAvailableSlots: slot.available <= 0,
           booked: bookedSlots.includes(slot.start_time),
         };
 
         if (hours < 12) {
           morningSlots.push(newSlot);
-        } else if (hours < 18) {
-          afternoonSlots.push(newSlot);
         } else {
           eveningSlots.push(newSlot);
         }
@@ -168,6 +175,7 @@ const HomeScreen = ({ navigation = {} }) => {
       setModalVisible(true);
     }
   };
+
   const handleBookSlot = async () => {
     setResLoading(true);
     closeModal();
@@ -239,19 +247,24 @@ const HomeScreen = ({ navigation = {} }) => {
                 styles.slot,
                 {
                   borderColor: selectedTime === slot.time ? "#007367" : "#000",
-                  backgroundColor:
-                    !slot.disabled && selectedTime === slot.time
-                      ? "#007367"
-                      : slot.disabled
-                      ? "transparent"
-                      : "#007367",
-                  opacity: slot.disabled ? 0.5 : 1,
-                  cursor: slot.disabled ? "not-allowed" : "pointer",
+                  backgroundColor: slot.noAvailableSlots
+                    ? "#423F3E"
+                    : !slot.disabled && selectedTime === slot.time
+                    ? "#007367"
+                    : slot.disabled
+                    ? "transparent"
+                    : "#007367",
+                  opacity: slot.disabled || slot.noAvailableSlots ? 0.5 : 1,
                 },
               ]}
-              disabled={slot.disabled}
+              disabled={slot.disabled || slot.noAvailableSlots}
             >
-              <Text style={{ color: slot.disabled ? "#000" : "#fff" }}>
+              <Text
+                style={{
+                  color:
+                    slot.disabled || slot.noAvailableSlots ? "#000" : "#fff",
+                }}
+              >
                 {slot.time}
               </Text>
             </TouchableOpacity>
@@ -413,7 +426,36 @@ const HomeScreen = ({ navigation = {} }) => {
           </View>
         </View>
         <View style={styles.timeSlots}>
-          <Text style={styles.title}>Available Slots</Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Available Slots</Text>
+            <TouchableOpacity onPress={toggleTooltip}>
+              <Ionicons
+                name="information-circle-outline"
+                size={22}
+                color="#3498db"
+                style={styles.availableicon}
+              />
+            </TouchableOpacity>
+          </View>
+          {tooltipVisible && (
+            <View style={styles.tooltipContainer}>
+              <View style={styles.tooltip}>
+                <View style={styles.tooltipItem}>
+                  <View style={styles.circleWhite}></View>
+                  <Text style={styles.tooltipText}>Timedout</Text>
+                </View>
+                <View style={styles.tooltipItem}>
+                  <View style={styles.circlePink}></View>
+                  <Text style={styles.tooltipText}>Reserved</Text>
+                </View>
+                <View style={styles.tooltipItem}>
+                  <View style={styles.circleGreen}></View>
+                  <Text style={styles.tooltipText}>Available</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
           {isLoading ? (
             <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color="#007367" />
@@ -435,6 +477,7 @@ const HomeScreen = ({ navigation = {} }) => {
               style={styles.scrollView}
               showsVerticalScrollIndicator={false}
               showsHorizontalScrollIndicator={false}
+              onPress={() => setTooltipVisible(false)}
             >
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Morning</Text>
@@ -451,7 +494,7 @@ const HomeScreen = ({ navigation = {} }) => {
                 )}
                 {renderTimeSlots(availableTimeSlots.morning)}
               </View>
-              <View style={styles.card}>
+              {/* <View style={styles.card}>
                 <Text style={styles.cardTitle}>Afternoon</Text>
                 {availableTimeSlots?.afternoon?.length === 0 && (
                   <Text
@@ -465,7 +508,7 @@ const HomeScreen = ({ navigation = {} }) => {
                   </Text>
                 )}
                 {renderTimeSlots(availableTimeSlots.afternoon)}
-              </View>
+              </View> */}
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Evening</Text>
                 {availableTimeSlots?.evening?.length === 0 && (
@@ -654,7 +697,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 2,
+    elevation: 4,
   },
   cardTitle: {
     fontSize: 18,
@@ -786,6 +829,77 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1,
+  },
+
+  titleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  availableicon: {
+    marginLeft: 5,
+  },
+  tooltipContainer: {
+    position: "absolute",
+    zIndex: 1000,
+    top: 25,
+    left: 130,
+    right: 10,
+    bottom: 10,
+    width: 110,
+  },
+  tooltip: {
+    flexDirection: "column",
+    backgroundColor: "#fff",
+    borderColor: "#000",
+    borderWidth: 1,
+    borderRadius: 5,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+    gap: 4,
+  },
+  tooltipItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  circleWhite: {
+    width: 15,
+    height: 15,
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#000",
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  circlePink: {
+    width: 15,
+    height: 15,
+    backgroundColor: "#423F3E",
+    borderWidth: 2,
+    borderColor: "#000",
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  circleGreen: {
+    width: 15,
+    height: 15,
+    backgroundColor: "#007367",
+    borderWidth: 2,
+    borderColor: "#000",
+    borderRadius: 5,
+    marginRight: 5,
+  },
+  tooltipText: {
+    color: "#000",
+    fontSize: 15,
   },
 });
 export default HomeScreen;

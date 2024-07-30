@@ -26,12 +26,6 @@ const Slots = ({ navigation }) => {
     return currentDateString === startDateString;
   };
 
-  const storeData = async () => {
-    try {
-      await AsyncStorage.setItem("qrCode", "hi");
-    } catch (e) {}
-  };
-
   const handleDelete = async () => {
     const regdNo = await AsyncStorage.getItem("myKey");
     const value = await AsyncStorage.getItem("token");
@@ -58,7 +52,7 @@ const Slots = ({ navigation }) => {
         setStorage(value);
       }
     };
-    storeData();
+
     fetchData();
   }, []);
 

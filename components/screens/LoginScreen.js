@@ -20,7 +20,8 @@ const LoginScreen = ({ navigation }) => {
   const storeData = async (data) => {
     try {
       await AsyncStorage.setItem("data", JSON.stringify(data));
-      await AsyncStorage.setItem("token", JSON.stringify(data.token));
+      await AsyncStorage.setItem("myKey", data.stdprofile[0].regdno);
+      await AsyncStorage.setItem("token", data.token);
     } catch (e) {
       console.error("Error storing data: ", e);
     }
@@ -62,12 +63,12 @@ const LoginScreen = ({ navigation }) => {
         }
       );
 
-      // if (response.status !== 200) {
-      //   console.error(
-      //     "Error storing token in database: ",
-      //     await response.text()
-      //   );
-      // }
+      if (response.status !== 200) {
+        console.error(
+          "Error storing token in database: ",
+          await response.text()
+        );
+      }
     } catch (error) {
       console.error("Login Error ", error);
     }
@@ -75,7 +76,7 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("http://gimsrapi.gitam.edu/Login", {
+      const response = await fetch("https://studentmobileapi.gitam.edu/Login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

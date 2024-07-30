@@ -21,6 +21,56 @@ const Home = ({ navigation }) => {
     navigation.navigate(screenName);
   };
 
+  const handleLogin = async () => {
+    try {
+      const response = await fetch("http://studentmobileapi.gitam.edu/Login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          UserName: username,
+          Password: password,
+          deviceid: "154874551",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 200) {
+        await storeData(data);
+        await storeTokenInDatabase(data);
+        navigation.navigate("Home");
+      } else {
+        Alert.alert(
+          "Invalid Credentials",
+          "Please enter valid details",
+          [
+            {
+              text: "Cancel",
+              style: "cancel",
+            },
+            {
+              text: "OK",
+            },
+          ],
+          { cancelable: false }
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        "Login Error",
+        "An error occurred during login. Please try again later.",
+        [
+          {
+            text: "OK",
+          },
+        ],
+        { cancelable: false }
+      );
+    }
+  };
+
   return (
     <MenuProvider>
       <SafeAreaView style={styles.safearea}>

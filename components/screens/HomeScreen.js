@@ -31,14 +31,45 @@ const HomeScreen = ({ navigation = {} }) => {
   const [resLoading, setResLoading] = useState(false);
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
-  const [value, setValue] = useState("Gym");
-  const [items, setItems] = useState([
+  const [value, setValue] = useState("GYM");
+
+  const items = [
     { label: "Gym", value: "GYM" },
     { label: "Block-C", value: "Block-C" },
     { label: "Girls Hostel", value: "Girls Hostel" },
     { label: "Campus", value: "Campus" },
-  ]);
+  ];
 
+  const [userData, setUserData] = useState(null);
+  const [filteredItems, setFilteredItems] = useState([]);
+
+  const filterItems = (data) => {
+    const { gender, campus } = data.stdprofile[0];
+    let filtered = items.filter((item) => {
+      if (campus === "VSP") {
+        return item.value === "GYM";
+      }
+
+      if (campus === "HYD") {
+        return (
+          item.value === "Block-C" ||
+          item.value === "Girls Hostel" ||
+          item.value === "Campus"
+        );
+      }
+
+      if (campus === "BLR") {
+        return item.value === "GYM";
+      }
+
+      if (item.value === "Girls Hostel" && gender === "M") {
+        return false;
+      }
+
+      return true;
+    });
+    setFilteredItems(filtered);
+  };
   const [tooltipVisible, setTooltipVisible] = useState(false);
 
   const toggleTooltip = () => {
@@ -91,6 +122,10 @@ const HomeScreen = ({ navigation = {} }) => {
   useEffect(() => {
     const fetchData = async () => {
       const value = await AsyncStorage.getItem("myKey");
+      const data = await AsyncStorage.getItem("data");
+      const parsedData = JSON.parse(data);
+      setUserData(parsedData);
+      filterItems(parsedData);
       if (value !== null) {
         setStorage(value);
       }
@@ -112,7 +147,7 @@ const HomeScreen = ({ navigation = {} }) => {
     };
 
     fetchData();
-  }, [value]);
+  }, [value, selectedDate]);
 
   useEffect(() => {
     const categorizeTimeSlots = () => {
@@ -319,18 +354,9 @@ const HomeScreen = ({ navigation = {} }) => {
       />
       {renderDetails()}
       <View style={{ justifyContent: "center", alignItems: "center" }}>
-        {selectedTime && bookedSlots.includes(selectedTime) ? (
-          <TouchableOpacity style={styles.updateButton}>
-            <Text style={styles.updateButtonText}>Update</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={styles.confirmButton}
-            onPress={handleBookSlot}
-          >
-            <Text style={styles.confirmButtonText}>Confirm</Text>
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity style={styles.confirmButton} onPress={handleBookSlot}>
+          <Text style={styles.confirmButtonText}>Confirm</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -404,7 +430,7 @@ const HomeScreen = ({ navigation = {} }) => {
             </ScrollView>
           </View>
           <View style={styles.locContainer}>
-            {items.map((item, index) => (
+            {filteredItems.map((item, index) => (
               <TouchableOpacity
                 key={index}
                 style={[
@@ -428,33 +454,7 @@ const HomeScreen = ({ navigation = {} }) => {
         <View style={styles.timeSlots}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Available Slots</Text>
-            <TouchableOpacity onPress={toggleTooltip}>
-              <Ionicons
-                name="information-circle-outline"
-                size={22}
-                color="#3498db"
-                style={styles.availableicon}
-              />
-            </TouchableOpacity>
           </View>
-          {tooltipVisible && (
-            <View style={styles.tooltipContainer}>
-              <View style={styles.tooltip}>
-                <View style={styles.tooltipItem}>
-                  <View style={styles.circleWhite}></View>
-                  <Text style={styles.tooltipText}>Timedout</Text>
-                </View>
-                <View style={styles.tooltipItem}>
-                  <View style={styles.circlePink}></View>
-                  <Text style={styles.tooltipText}>Reserved</Text>
-                </View>
-                <View style={styles.tooltipItem}>
-                  <View style={styles.circleGreen}></View>
-                  <Text style={styles.tooltipText}>Available</Text>
-                </View>
-              </View>
-            </View>
-          )}
 
           {isLoading ? (
             <View style={styles.loadingContainer}>
@@ -586,6 +586,8 @@ const styles = StyleSheet.create({
   loccard: {
     flex: 1,
     marginHorizontal: 5,
+    // height: 30,
+    padding: 8,
     borderRadius: 5,
     alignItems: "center",
     justifyContent: "center",

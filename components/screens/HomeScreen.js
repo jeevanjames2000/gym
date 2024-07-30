@@ -357,7 +357,7 @@ const HomeScreen = ({ navigation = {} }) => {
   useEffect(() => {
     const generateDates = () => {
       let datesArray = [];
-      for (let i = -10; i < 30; i++) {
+      for (let i = -15; i < 30; i++) {
         datesArray.push(moment().add(i, "days"));
       }
       setDates(datesArray);

@@ -10,33 +10,88 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Device from "expo-device";
 
 const LoginScreen = ({ navigation }) => {
-  const [username, setUsername] = useState("502849");
-  const [password, setPassword] = useState("1234");
-
-  const storeData = async (token) => {
+  const [username, setUsername] = useState("2023006357");
+  const [password, setPassword] = useState("Gitam@123");
+  const [deviceId, setDeviceId] = useState();
+  const [userdata, setUserData] = useState([]);
+  const storeData = async (data) => {
     try {
-      await AsyncStorage.setItem("myKey", username);
-      await AsyncStorage.setItem("token", token);
-    } catch (e) {}
+      await AsyncStorage.setItem("data", JSON.stringify(data));
+      await AsyncStorage.setItem("token", JSON.stringify(data.token));
+    } catch (e) {
+      console.error("Error storing data: ", e);
+    }
   };
+
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem("data");
+      if (value !== null) {
+        setUserData(JSON.parse(value));
+      }
+    } catch (e) {
+      console.error("Error retrieving data: ", e);
+    }
+  };
+
+  useEffect(() => {
+    const getDeviceId = async () => {
+      const id = Device.osBuildId;
+      setDeviceId(id);
+    };
+    getDeviceId();
+    getData();
+  }, []);
+
+  const storeTokenInDatabase = async (data) => {
+    try {
+      const response = await fetch(
+        "https://sports1.gitam.edu/auth/storeToken",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            token: data.token,
+            regdno: data.regdno,
+          }),
+        }
+      );
+
+      // if (response.status !== 200) {
+      //   console.error(
+      //     "Error storing token in database: ",
+      //     await response.text()
+      //   );
+      // }
+    } catch (error) {
+      console.error("Login Error ", error);
+    }
+  };
+
   const handleLogin = async () => {
     try {
-      const response = await fetch("https://sports1.gitam.edu/auth/login", {
+      const response = await fetch("http://gimsrapi.gitam.edu/Login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          regdNo: username,
+          UserName: username,
+          Password: password,
+          deviceid: "154874551",
         }),
       });
 
       const data = await response.json();
 
       if (response.status === 200) {
-        await storeData(data.token);
+        await storeData(data);
+        await storeTokenInDatabase(data);
         navigation.navigate("Home");
       } else {
         Alert.alert(

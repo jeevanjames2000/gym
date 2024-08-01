@@ -17,13 +17,14 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState("Gitam@123");
   const [deviceId, setDeviceId] = useState();
   const [userdata, setUserData] = useState([]);
+
   const storeData = async (data) => {
     try {
       await AsyncStorage.setItem("data", JSON.stringify(data));
       await AsyncStorage.setItem("myKey", data.stdprofile[0].regdno);
       await AsyncStorage.setItem("token", data.token);
     } catch (e) {
-      console.error("Error storing data: ", e);
+      //need to create error page
     }
   };
 
@@ -34,7 +35,7 @@ const LoginScreen = ({ navigation }) => {
         setUserData(JSON.parse(value));
       }
     } catch (e) {
-      console.error("Error retrieving data: ", e);
+      //need to create error page
     }
   };
 
@@ -58,19 +59,16 @@ const LoginScreen = ({ navigation }) => {
           },
           body: JSON.stringify({
             token: data.token,
-            regdno: data.regdno,
+            regdno: data.stdprofile[0].regdno,
           }),
         }
       );
 
       if (response.status !== 200) {
-        console.error(
-          "Error storing token in database: ",
-          await response.text()
-        );
+        //need to create error page
       }
     } catch (error) {
-      console.error("Login Error ", error);
+      //need to create error page
     }
   };
 

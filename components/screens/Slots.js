@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 const Slots = ({ navigation }) => {
   const [slotsdata, setSlotsData] = useState([]);
+
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);
@@ -27,11 +28,10 @@ const Slots = ({ navigation }) => {
   };
 
   const handleDelete = async () => {
-    const regdNo = await AsyncStorage.getItem("myKey");
     const value = await AsyncStorage.getItem("token");
 
     const deleteResponse = await fetch(
-      `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo/${regdNo}`,
+      `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo/${storage}`,
       {
         method: "DELETE",
         headers: {
@@ -41,8 +41,6 @@ const Slots = ({ navigation }) => {
       }
     );
     const res = deleteResponse;
-    if (res.status == 200) {
-    }
   };
 
   useEffect(() => {
@@ -63,7 +61,6 @@ const Slots = ({ navigation }) => {
           setIsLoading(true);
           setError(null);
           const value = await AsyncStorage.getItem("token");
-
           const response = await fetch(
             `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`,
             {
@@ -214,9 +211,9 @@ const Slots = ({ navigation }) => {
 
   if (!isLoading && (slotsdata.length === 0 || error)) {
     return (
-      <View style={{ alignItems: "center" }}>
-        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-          No Slots Booked
+      <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
+        <Text style={{ fontSize: 25, fontWeight: "bold" }}>
+          No Slots Booked for Today
         </Text>
       </View>
     );

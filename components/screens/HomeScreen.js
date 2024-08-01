@@ -21,6 +21,7 @@ const HomeScreen = ({ navigation = {} }) => {
   const [dates, setDates] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
+
   const [open, setOpen] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [bookedSlots, setBookedSlots] = useState([]);
@@ -31,8 +32,8 @@ const HomeScreen = ({ navigation = {} }) => {
   const [resLoading, setResLoading] = useState(false);
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
-  const [value, setValue] = useState("GYM");
 
+  const [value, setValue] = useState("Block-C");
   const items = [
     { label: "Gym", value: "GYM" },
     { label: "Block-C", value: "Block-C" },
@@ -41,16 +42,25 @@ const HomeScreen = ({ navigation = {} }) => {
   ];
 
   const [userData, setUserData] = useState(null);
+
   const [filteredItems, setFilteredItems] = useState([]);
 
   const filterItems = (data) => {
     const { gender, campus } = data.stdprofile[0];
+
     let filtered = items.filter((item) => {
       if (campus === "VSP") {
+        setValue("GYM");
+
         return item.value === "GYM";
       }
 
       if (campus === "HYD") {
+        if (gender === "M") {
+          return item.value === "Block-C" || item.value === "Campus";
+        }
+        setValue("Block-C");
+
         return (
           item.value === "Block-C" ||
           item.value === "Girls Hostel" ||
@@ -59,15 +69,28 @@ const HomeScreen = ({ navigation = {} }) => {
       }
 
       if (campus === "BLR") {
-        return item.value === "GYM";
+        if (gender === "M") {
+          setValue("Block-C");
+          return item.value === "Block-C" || item.value === "Campus";
+        }
+        return (
+          item.value === "Block-C" ||
+          item.value === "Girls Hostel" ||
+          item.value === "Campus"
+        );
       }
 
-      if (item.value === "Girls Hostel" && gender === "M") {
-        return false;
+      if (gender === "M") {
+        return (
+          item.value === "GYM" ||
+          item.value === "Block-C" ||
+          item.value === "Campus"
+        );
       }
 
       return true;
     });
+
     setFilteredItems(filtered);
   };
   const [tooltipVisible, setTooltipVisible] = useState(false);
@@ -82,8 +105,9 @@ const HomeScreen = ({ navigation = {} }) => {
       setError(false);
       const formattedDate = date.toISOString().split("T")[0];
       const value = await AsyncStorage.getItem("token");
+
       const response = await fetch(
-        `https://sports1.gitam.edu/api/gym/getGymSchedulesByLocation/${location}/${formattedDate}`,
+        `https://sports1.gitam.edu/api/gym/getGymSchedulesByLocation/${location}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -92,6 +116,7 @@ const HomeScreen = ({ navigation = {} }) => {
         }
       );
       const data = await response.json();
+
       if (data.length === 0) {
         setError(true);
       } else {
@@ -130,7 +155,6 @@ const HomeScreen = ({ navigation = {} }) => {
         setStorage(value);
       }
     };
-
     fetchData();
   }, []);
 
@@ -170,10 +194,18 @@ const HomeScreen = ({ navigation = {} }) => {
         const slotTime = new Date(currentTime);
         slotTime.setHours(hours, minutes, 0, 0);
 
+        const isToday = (currentTime, selectedDate) => {
+          return (
+            currentTime.toISOString().split("T")[0] ===
+            selectedDate.toISOString().split("T")[0]
+          );
+        };
+
         const newSlot = {
           ...slot,
           end_time: slot.end_time,
-          disabled: slotTime <= currentTime,
+          disabled:
+            isToday(currentTime, selectedDate) && slotTime <= currentTime,
           noAvailableSlots: slot.available <= 0,
           booked: bookedSlots.includes(slot.start_time),
         };
@@ -383,7 +415,7 @@ const HomeScreen = ({ navigation = {} }) => {
   useEffect(() => {
     const generateDates = () => {
       let datesArray = [];
-      for (let i = -15; i < 30; i++) {
+      for (let i = 0; i < 31; i++) {
         datesArray.push(moment().add(i, "days"));
       }
       setDates(datesArray);

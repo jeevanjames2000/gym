@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   StyleSheet,
@@ -15,61 +15,44 @@ import {
   MenuProvider,
 } from "react-native-popup-menu";
 import HomeScreen from "./HomeScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Home = ({ navigation }) => {
   const handleNavigate = (screenName) => {
     navigation.navigate(screenName);
   };
+  const [storage, setStorage] = useState(null);
 
-  const handleLogin = async () => {
-    try {
-      const response = await fetch("http://studentmobileapi.gitam.edu/Login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          UserName: username,
-          Password: password,
-          deviceid: "154874551",
-        }),
-      });
+  const handleLogout = async () => {
+    const key = await AsyncStorage.getItem("myKey");
+    const value = await AsyncStorage.getItem("token");
 
-      const data = await response.json();
-
-      if (response.status === 200) {
-        await storeData(data);
-        await storeTokenInDatabase(data);
-        navigation.navigate("Home");
-      } else {
-        Alert.alert(
-          "Invalid Credentials",
-          "Please enter valid details",
-          [
-            {
-              text: "Cancel",
-              style: "cancel",
-            },
-            {
-              text: "OK",
-            },
-          ],
-          { cancelable: false }
-        );
-      }
-    } catch (error) {
-      Alert.alert(
-        "Login Error",
-        "An error occurred during login. Please try again later.",
-        [
-          {
-            text: "OK",
-          },
-        ],
-        { cancelable: false }
-      );
+    const response = await fetch("https://sports1.gitam.edu/auth/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        regdNo: key,
+      }),
+    });
+    if (response.status === 200) {
+      handleNavigate("Login");
+    } else {
+      handleNavigate("Login");
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const value = await AsyncStorage.getItem("myKey");
+      if (value !== null) {
+        setStorage(value);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <MenuProvider>
@@ -90,10 +73,7 @@ const Home = ({ navigation }) => {
                   onSelect={() => handleNavigate("History")}
                   text="History"
                 />
-                <MenuOption
-                  onSelect={() => handleNavigate("Login")}
-                  text="Logout"
-                />
+                <MenuOption onSelect={handleLogout} text="Logout" />
               </MenuOptions>
             </Menu>
           </View>
@@ -116,7 +96,7 @@ const triggerStyles = {
 };
 
 const optionsStyles = {
-  optionsContainer: {       
+  optionsContainer: {
     backgroundColor: "#007367",
     padding: 5,
     borderRadius: 5,

@@ -27,20 +27,25 @@ const Slots = ({ navigation }) => {
     return currentDateString === startDateString;
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (slot) => {
     const value = await AsyncStorage.getItem("token");
 
     const deleteResponse = await fetch(
-      `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo/${storage}`,
+      `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo`,
       {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${value}`,
         },
+        body: JSON.stringify({
+          regdNo: storage,
+          masterID: slot.masterID,
+        }),
       }
     );
     const res = deleteResponse;
+    console.log("res: ", res.status);
   };
 
   useEffect(() => {
@@ -97,7 +102,8 @@ const Slots = ({ navigation }) => {
     }, [storage])
   );
 
-  const handleUpdatePress = () => {
+  const handleUpdatePress = (slot) => {
+    console.log("slot1: ", slot.masterID);
     Alert.alert(
       "Confirmation",
       "Are you sure to update the current slots?",
@@ -110,7 +116,7 @@ const Slots = ({ navigation }) => {
           text: "OK",
           onPress: () => {
             const data = "Update";
-            handleDelete();
+            handleDelete(slot);
             navigation.navigate("Gym");
           },
         },
@@ -127,7 +133,10 @@ const Slots = ({ navigation }) => {
   const renderSlotDetails = (slot, index) => (
     <View key={index} style={styles.card}>
       {isSameDate(slot) && (
-        <TouchableOpacity style={styles.editButton} onPress={handleUpdatePress}>
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => handleUpdatePress(slot)}
+        >
           <Text style={styles.updateText}>Update</Text>
         </TouchableOpacity>
       )}

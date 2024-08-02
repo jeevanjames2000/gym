@@ -122,6 +122,7 @@ const HomeScreen = ({ navigation = {} }) => {
       } else {
         const slots = data?.map((slot) => ({
           ...slot,
+          masterID: slot.ID,
           time: slot.start_time,
           Gym_scheduling_id: slot.Gym_scheduling_id,
           Access_type: slot.Access_type,
@@ -131,7 +132,6 @@ const HomeScreen = ({ navigation = {} }) => {
           occupied: slot.occupied,
           disabled: new Date(slot.start_time) <= new Date(),
           noAvailableSlots: slot.available <= 0,
-
           booked: bookedSlots.includes(slot.start_time),
         }));
         setSlotsData(slots);
@@ -235,6 +235,7 @@ const HomeScreen = ({ navigation = {} }) => {
     setModalVisible(false);
   };
   const [slottime, setSlotTime] = useState([]);
+
   const handleTimeSlotSelect = (slot) => {
     if (!slot.disabled) {
       setSlotTime(slot);
@@ -250,7 +251,9 @@ const HomeScreen = ({ navigation = {} }) => {
       const formattedDate = selectedDate.toISOString().split("T")[0];
       const apiUrl =
         "https://sports1.gitam.edu/slot/gym/insertGymMasterSchedulingSQL";
+
       const bookingData = {
+        masterID: String(slottime.ID),
         Gym_sheduling_id: slottime.Gym_sheduling_id,
         regdNo: storage,
         start_date: formattedDate,

@@ -18,25 +18,26 @@ const Slots = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);
-
   const isSameDate = (slot) => {
     const startDateStr = slot.start_date.split("T")[0];
     const startTimeStr = slot.start_time;
-
     function convertTo24Hour(time) {
       const [timePart, modifier] = time.split(" ");
       let [hours, minutes] = timePart.split(":");
+      if (!hours || !minutes) {
+        return "00:00";
+      }
       if (hours === "12") {
         hours = "00";
       }
-      if (modifier === "PM") {
+      if (modifier === "PM" && hours !== "00") {
         hours = parseInt(hours, 10) + 12;
       }
+      hours = hours.toString().padStart(2, "0");
       return `${hours}:${minutes}`;
     }
-
     const startTime24Hour = convertTo24Hour(startTimeStr);
-    const startDateTimeStr = `${startDateStr}T${startTime24Hour}:00.000Z`;
+    const startDateTimeStr = `${startDateStr}T${startTime24Hour}:00`;
     const startDateTime = new Date(startDateTimeStr);
     const oneHourBeforeStart = new Date(
       startDateTime.getTime() - 60 * 60 * 1000
@@ -44,7 +45,6 @@ const Slots = ({ navigation }) => {
     const now = new Date();
     return now < oneHourBeforeStart;
   };
-
   const handleDelete = async (slot) => {
     const value = await AsyncStorage.getItem("token");
     const deleteResponse = await fetch(
@@ -63,7 +63,6 @@ const Slots = ({ navigation }) => {
     );
     const res = deleteResponse;
   };
-
   useEffect(() => {
     const fetchData = async () => {
       const value = await AsyncStorage.getItem("myKey");

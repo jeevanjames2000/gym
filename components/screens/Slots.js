@@ -12,24 +12,41 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-
+import NotFound from "../errors/NotFound";
 const Slots = ({ navigation }) => {
   const [slotsdata, setSlotsData] = useState([]);
-
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);
 
   const isSameDate = (slot) => {
+    const startDateStr = slot.start_date.split("T")[0];
+    const startTimeStr = slot.start_time;
+
+    function convertTo24Hour(time) {
+      const [timePart, modifier] = time.split(" ");
+      let [hours, minutes] = timePart.split(":");
+      if (hours === "12") {
+        hours = "00";
+      }
+      if (modifier === "PM") {
+        hours = parseInt(hours, 10) + 12;
+      }
+      return `${hours}:${minutes}`;
+    }
+
+    const startTime24Hour = convertTo24Hour(startTimeStr);
+    const startDateTimeStr = `${startDateStr}T${startTime24Hour}:00.000Z`;
+    const startDateTime = new Date(startDateTimeStr);
+    const oneHourBeforeStart = new Date(
+      startDateTime.getTime() - 60 * 60 * 1000
+    );
     const now = new Date();
-    const currentDateString = now.toISOString().split("T")[0];
-    const startDateString = slot.generated_date.split("T")[0];
-    return currentDateString === startDateString;
+    return now < oneHourBeforeStart;
   };
 
   const handleDelete = async (slot) => {
     const value = await AsyncStorage.getItem("token");
-
     const deleteResponse = await fetch(
       `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo`,
       {
@@ -45,7 +62,6 @@ const Slots = ({ navigation }) => {
       }
     );
     const res = deleteResponse;
-    console.log("res: ", res.status);
   };
 
   useEffect(() => {
@@ -55,10 +71,8 @@ const Slots = ({ navigation }) => {
         setStorage(value);
       }
     };
-
     fetchData();
   }, []);
-
   useFocusEffect(
     React.useCallback(() => {
       const fetchGymSchedules = async () => {
@@ -76,15 +90,8 @@ const Slots = ({ navigation }) => {
             }
           );
           const data = await response.json();
-
           if (response.ok) {
-            const currentDate = new Date().toISOString().split("T")[0];
-            const filteredData = data.filter(
-              (item) =>
-                new Date(item.start_date).toISOString().split("T")[0] ===
-                currentDate
-            );
-            setSlotsData(filteredData);
+            setSlotsData(data);
             setIsLoading(false);
           } else {
             setError(data);
@@ -95,15 +102,12 @@ const Slots = ({ navigation }) => {
           setIsLoading(false);
         }
       };
-
       if (storage) {
         fetchGymSchedules();
       }
     }, [storage])
   );
-
   const handleUpdatePress = (slot) => {
-    console.log("slot1: ", slot.masterID);
     Alert.alert(
       "Confirmation",
       "Are you sure to update the current slots?",
@@ -124,12 +128,10 @@ const Slots = ({ navigation }) => {
       { cancelable: false }
     );
   };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString();
   };
-
   const renderSlotDetails = (slot, index) => (
     <View key={index} style={styles.card}>
       {isSameDate(slot) && (
@@ -137,7 +139,7 @@ const Slots = ({ navigation }) => {
           style={styles.editButton}
           onPress={() => handleUpdatePress(slot)}
         >
-          <Text style={styles.updateText}>Update</Text>
+          <Text style={styles.updateText}>Cancel</Text>
         </TouchableOpacity>
       )}
       <View style={styles.detailContainer}>
@@ -208,7 +210,6 @@ const Slots = ({ navigation }) => {
       </View>
     </View>
   );
-
   if (isLoading) {
     return (
       <View style={styles.modalLoading}>
@@ -217,21 +218,12 @@ const Slots = ({ navigation }) => {
       </View>
     );
   }
-
   if (!isLoading && (slotsdata.length === 0 || error)) {
-    return (
-      <View style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
-        <Text style={{ fontSize: 25, fontWeight: "bold" }}>
-          No Slots Booked for Today
-        </Text>
-      </View>
-    );
+    return <NotFound />;
   }
-
   const renderGymSlots = () => {
     return slotsdata.map(renderSlotDetails);
   };
-
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -240,13 +232,11 @@ const Slots = ({ navigation }) => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   imgcontainer: {
     padding: 20,
     alignItems: "center",
   },
-
   container: {
     flex: 1,
     padding: 20,
@@ -320,5 +310,4 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 });
-
 export default Slots;

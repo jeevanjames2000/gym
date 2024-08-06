@@ -10,7 +10,6 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -21,8 +20,6 @@ const HomeScreen = ({ navigation = {} }) => {
   const [dates, setDates] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
-
-  const [open, setOpen] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [bookedSlots, setBookedSlots] = useState([]);
   const [slotsdata, setSlotsData] = useState([]);
@@ -32,7 +29,6 @@ const HomeScreen = ({ navigation = {} }) => {
   const [resLoading, setResLoading] = useState(false);
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
-
   const [value, setValue] = useState("Block-C");
   const items = [
     { label: "Gym", value: "GYM" },
@@ -40,9 +36,6 @@ const HomeScreen = ({ navigation = {} }) => {
     { label: "Girls Hostel", value: "Girls Hostel" },
     { label: "Campus", value: "Campus" },
   ];
-
-  const [userData, setUserData] = useState(null);
-
   const [filteredItems, setFilteredItems] = useState([]);
 
   const filterItems = (data) => {
@@ -93,21 +86,16 @@ const HomeScreen = ({ navigation = {} }) => {
 
     setFilteredItems(filtered);
   };
-  const [tooltipVisible, setTooltipVisible] = useState(false);
-
-  const toggleTooltip = () => {
-    setTooltipVisible(!tooltipVisible);
-  };
-
-  const fetchGymSchedules = async (location, date) => {
+  const fetchGymSchedules = async (date, location) => {
     try {
       setIsLoading(true);
       setError(false);
       const formattedDate = date.toISOString().split("T")[0];
+
       const value = await AsyncStorage.getItem("token");
 
       const response = await fetch(
-        `https://sports1.gitam.edu/api/gym/getGymSchedulesByLocation/${location}`,
+        `https://sports1.gitam.edu/api/gym/getGymSchedulesByLocation/${formattedDate}/${location}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -149,7 +137,6 @@ const HomeScreen = ({ navigation = {} }) => {
       const value = await AsyncStorage.getItem("myKey");
       const data = await AsyncStorage.getItem("data");
       const parsedData = JSON.parse(data);
-      setUserData(parsedData);
       filterItems(parsedData);
       if (value !== null) {
         setStorage(value);
@@ -160,7 +147,7 @@ const HomeScreen = ({ navigation = {} }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      await fetchGymSchedules(value, selectedDate);
+      await fetchGymSchedules(selectedDate, value);
       const timeout = setTimeout(() => {
         if (isLoading) {
           setIsLoading(false);
@@ -229,7 +216,6 @@ const HomeScreen = ({ navigation = {} }) => {
 
   const handleValueChange = (newValue) => {
     setValue(newValue);
-    fetchGymSchedules(newValue, selectedDate);
   };
   const closeModal = () => {
     setModalVisible(false);
@@ -286,6 +272,7 @@ const HomeScreen = ({ navigation = {} }) => {
           setBookedSlots([...bookedSlots, selectedTime]);
           setSlotConfirmationVisible(true);
           setStoreErr(responseData);
+          fetchGymSchedules();
         } else {
           setResLoading(false);
           setSlotConfirmationVisible(true);
@@ -441,13 +428,16 @@ const HomeScreen = ({ navigation = {} }) => {
                   style={[
                     styles.dateItem,
                     date.isSame(selectedDate, "day") && styles.selectedDateItem,
+                    date.diff(moment(), "days") >= 2 && styles.disabledDateItem, // Apply disabled styles
                   ]}
                   onPress={() => handleDateSelect(date)}
+                  disabled={date.diff(moment(), "days") >= 2}
                 >
                   <Text
                     style={[
                       styles.dayText,
                       date.isSame(selectedDate, "day") && styles.selectedText,
+                      date.diff(moment(), "days") >= 2 && styles.disabledText,
                     ]}
                   >
                     {date.format("dddd").charAt(0)}
@@ -456,6 +446,7 @@ const HomeScreen = ({ navigation = {} }) => {
                     style={[
                       styles.dateText,
                       date.isSame(selectedDate, "day") && styles.selectedText,
+                      date.diff(moment(), "days") >= 2 && styles.disabledText,
                     ]}
                   >
                     {date.format("D")}
@@ -937,6 +928,12 @@ const styles = StyleSheet.create({
   tooltipText: {
     color: "#000",
     fontSize: 15,
+  },
+  disabledDateItem: {
+    opacity: 1,
+  },
+  disabledText: {
+    color: "#ccc", // Fade out disabled text
   },
 });
 export default HomeScreen;

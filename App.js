@@ -7,6 +7,7 @@ import HomeScreen from "./components/screens/HomeScreen";
 import Home from "./components/screens/Home";
 import Slots from "./components/screens/Slots";
 import History from "./components/screens/History";
+import NotFound from "./components/errors/NotFound";
 
 const Stack = createNativeStackNavigator();
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
             component={Home}
             options={{ headerShown: false }}
           />
+
           <Stack.Screen
             name="Gym"
             component={HomeScreen}
@@ -48,6 +50,11 @@ export default function App() {
             name="History"
             component={History}
             options={{ headerShown: true }}
+          />
+          <Stack.Screen
+            name="NotFound"
+            component={NotFound}
+            options={{ headerShown: false }}
           />
         </Stack.Navigator>
       </NavigationContainer>

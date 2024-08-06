@@ -16,7 +16,8 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "icon": "./assets/gitam-logo-circle.png"
     },
     "android": {
       "adaptiveIcon": {

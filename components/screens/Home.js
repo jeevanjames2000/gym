@@ -1,11 +1,5 @@
-import React, { useEffect, useState } from "react";
-import {
-  SafeAreaView,
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-} from "react-native";
+import React from "react";
+import { SafeAreaView, StyleSheet, View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
   Menu,
@@ -21,11 +15,9 @@ const Home = ({ navigation }) => {
   const handleNavigate = (screenName) => {
     navigation.navigate(screenName);
   };
-  const [storage, setStorage] = useState(null);
 
   const handleLogout = async () => {
     const key = await AsyncStorage.getItem("myKey");
-    const value = await AsyncStorage.getItem("token");
 
     const response = await fetch("https://sports1.gitam.edu/auth/logout", {
       method: "POST",
@@ -42,17 +34,6 @@ const Home = ({ navigation }) => {
       handleNavigate("Login");
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const value = await AsyncStorage.getItem("myKey");
-      if (value !== null) {
-        setStorage(value);
-      }
-    };
-
-    fetchData();
-  }, []);
 
   return (
     <MenuProvider>

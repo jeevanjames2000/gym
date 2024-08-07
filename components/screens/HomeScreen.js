@@ -377,19 +377,38 @@ const HomeScreen = ({ navigation = {} }) => {
       <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
         <Ionicons name="close-outline" size={20} color="#fff" />
       </TouchableOpacity>
-      <Image
-        source={{
-          uri: "https://img.freepik.com/premium-photo/arafed-gym-with-treads-machines-large-room-generative-ai_955884-9931.jpg",
-        }}
-        style={styles.modalImage}
-        resizeMode="cover"
-      />
-      {renderDetails()}
-      <View style={{ justifyContent: "center", alignItems: "center" }}>
-        <TouchableOpacity style={styles.confirmButton} onPress={handleBookSlot}>
-          <Text style={styles.confirmButtonText}>Confirm</Text>
-        </TouchableOpacity>
-      </View>
+
+      {slottime.Maintanence ? (
+        <View style={styles.maintenanceContainer}>
+          <Image
+            source={require("../../assets/barrier.png")}
+            style={styles.maintenanceImage}
+            resizeMode="contain"
+          />
+          <Text style={styles.maintenanceText}>
+            This slot is under maintenance.
+          </Text>
+        </View>
+      ) : (
+        <>
+          <Image
+            source={{
+              uri: "https://img.freepik.com/premium-photo/arafed-gym-with-treads-machines-large-room-generative-ai_955884-9931.jpg",
+            }}
+            style={styles.modalImage}
+            resizeMode="cover"
+          />
+          {renderDetails()}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={handleBookSlot}
+            >
+              <Text style={styles.confirmButtonText}>Confirm</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </View>
   );
 
@@ -651,6 +670,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     borderWidth: 1,
   },
+  maintenanceContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 20,
+  },
+  maintenanceImage: {
+    width: 150,
+    height: 150,
+    marginBottom: 10,
+  },
+  maintenanceText: {
+    fontSize: 16,
+    color: "red",
+    fontWeight: "bold",
+  },
+
+  buttonContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+
   selectedCard: {
     backgroundColor: "#007367",
   },

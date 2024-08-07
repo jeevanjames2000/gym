@@ -20,7 +20,7 @@ const LoginScreen = ({ navigation }) => {
   const [password, setPassword] = useState("Gitam@123");
   const [deviceId, setDeviceId] = useState();
   const [userdata, setUserData] = useState([]);
-
+  const [error, setError] = useState(false);
   const storeData = async (data) => {
     try {
       await AsyncStorage.setItem("data", JSON.stringify(data));
@@ -103,7 +103,7 @@ const LoginScreen = ({ navigation }) => {
         await storeTokenInDatabase(data);
         navigation.navigate("Home");
       } else {
-        checkInternetAndNavigate();
+        setError("Invalid Credentials");
       }
     } catch (error) {
       checkInternetAndNavigate();
@@ -113,6 +113,15 @@ const LoginScreen = ({ navigation }) => {
   if (!isConnected) {
     return <Network />;
   }
+  const handleUsernameChange = (text) => {
+    setUsername(text);
+    if (error) setError(null);
+  };
+
+  const handlePasswordChange = (text) => {
+    setPassword(text);
+    if (error) setError(null);
+  };
 
   return (
     <View style={styles.container}>
@@ -126,20 +135,22 @@ const LoginScreen = ({ navigation }) => {
       <View style={styles.formContainer}>
         <Text style={styles.loginText}>Login</Text>
         <TextInput
-          style={styles.input}
+          style={[styles.input, error ? styles.errorInput : null]}
           placeholder="Enter User ID"
           value={username}
-          onChangeText={setUsername}
+          onChangeText={handleUsernameChange}
         />
         <TextInput
-          style={styles.input}
+          style={[
+            error ? styles.errorfield : styles.passworcinput,
+            error ? styles.errorInput : null,
+          ]}
           placeholder="Enter Password"
           value={password}
           secureTextEntry
-          onChangeText={setPassword}
+          onChangeText={handlePasswordChange}
         />
-        {/* {error && <Text style={{ color: "red" }}>Invalid Credentials</Text>} */}
-
+        {error && <Text style={styles.errorText}>{error}</Text>}
         <TouchableOpacity
           style={styles.button}
           onPress={checkInternetAndNavigate}
@@ -186,7 +197,6 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     width: "100%",
-    alignItems: "center",
     paddingBottom: 20,
   },
   loginText: {
@@ -205,6 +215,28 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#fff",
   },
+  passworcinput: {
+    width: "100%",
+    height: 60,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    marginBottom: 20,
+  },
+  errorfield: {
+    width: "100%",
+    height: 60,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    backgroundColor: "#fff",
+  },
+  errorInput: {
+    borderColor: "red",
+  },
   button: {
     width: "100%",
     height: 60,
@@ -214,14 +246,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 10,
   },
-
   buttonText: {
     color: "#fff",
     fontSize: 18,
     textAlign: "center",
     marginRight: 10,
   },
-
   icon: {
     color: "#fff",
   },
@@ -237,6 +267,13 @@ const styles = StyleSheet.create({
     color: "#007367",
     fontSize: 16,
     fontWeight: "700",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 14,
+    marginLeft: 10,
+    marginBottom: 5,
+    textAlign: "left",
   },
 });
 

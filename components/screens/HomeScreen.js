@@ -427,7 +427,7 @@ const HomeScreen = ({ navigation = {} }) => {
     setSelectedDate(date);
   };
   if (!isConnected) {
-    return <Network />;
+    return <Network data={"Gym"} />;
   }
   return (
     <>

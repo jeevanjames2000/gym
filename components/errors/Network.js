@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,8 +7,10 @@ import {
   StyleSheet,
   DevSettings,
 } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
+import { useNavigation } from "@react-navigation/native";
 
-const Network = ({ navigation }) => {
+const Network = () => {
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>

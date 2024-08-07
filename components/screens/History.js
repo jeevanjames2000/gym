@@ -46,7 +46,7 @@ const History = () => {
           const data = await response.json();
 
           if (response.ok) {
-            const filter = data.recordset;
+            const filter = data;
 
             setSlotsData(filter);
             setIsLoading(false);
@@ -65,7 +65,7 @@ const History = () => {
   );
 
   if (!isLoading && (slotsdata.length === 0 || error)) {
-    return <NotFound />;
+    return <NotFound data={"No data found!"} />;
   }
   return (
     <View style={styles.container}>

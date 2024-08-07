@@ -218,7 +218,7 @@ const Slots = ({ navigation }) => {
     );
   }
   if (!isLoading && (slotsdata.length === 0 || error)) {
-    return <NotFound />;
+    return <NotFound data={"No data found!"} />;
   }
   const renderGymSlots = () => {
     return slotsdata.map(renderSlotDetails);

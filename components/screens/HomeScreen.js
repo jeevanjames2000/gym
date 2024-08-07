@@ -12,8 +12,9 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import NetInfo from "@react-native-community/netinfo";
 import moment from "moment";
+import Network from "../errors/Network";
 
 const HomeScreen = ({ navigation = {} }) => {
   const [selectedDate, setSelectedDate] = useState(moment());
@@ -86,6 +87,13 @@ const HomeScreen = ({ navigation = {} }) => {
 
     setFilteredItems(filtered);
   };
+
+  const [isConnected, setIsConnected] = useState(true);
+
+  const checkInternetAndNavigate = async () => {
+    const state = await NetInfo.fetch();
+    setIsConnected(state.isConnected);
+  };
   const fetchGymSchedules = async (date, location) => {
     try {
       setIsLoading(true);
@@ -142,6 +150,7 @@ const HomeScreen = ({ navigation = {} }) => {
         setStorage(value);
       }
     };
+    checkInternetAndNavigate();
     fetchData();
   }, []);
 
@@ -156,6 +165,7 @@ const HomeScreen = ({ navigation = {} }) => {
 
       return () => clearTimeout(timeout);
     };
+    checkInternetAndNavigate();
 
     fetchData();
   }, [value, selectedDate]);
@@ -416,6 +426,9 @@ const HomeScreen = ({ navigation = {} }) => {
   const handleDateSelect = (date) => {
     setSelectedDate(date);
   };
+  if (!isConnected) {
+    return <Network />;
+  }
   return (
     <>
       <View style={styles.container}>
@@ -488,16 +501,35 @@ const HomeScreen = ({ navigation = {} }) => {
               <Text>Loading</Text>
             </View>
           ) : error ? (
-            <Text
-              style={{
-                flex: 1,
-                fontSize: 13,
-                fontWeight: "bold",
-                color: "red",
-              }}
-            >
-              No gym schedules found for the specified location and date
-            </Text>
+            <>
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flex: 1,
+                }}
+              >
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={require("../../assets/planet (1).png")}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                </View>
+                <Text style={styles.title}>Oops!</Text>
+                <Text
+                  style={{
+                    flex: 1,
+                    fontSize: 13,
+                    fontWeight: "bold",
+                    color: "red",
+                  }}
+                >
+                  No gym schedules found!
+                </Text>
+                {/* <Text style={styles.subtitle}>{data}</Text> */}
+              </View>
+            </>
           ) : (
             <ScrollView
               style={styles.scrollView}
@@ -626,6 +658,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     // fontWeight: "500",
     color: "#333",
+  },
+
+  imageContainer: {
+    backgroundColor: "transparent",
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 0,
+  },
+  logo: {
+    width: "100%",
+    height: 350,
+    backgroundColor: "transparent",
+  },
+
+  title: {
+    fontSize: 25,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 20,
+    marginBottom: 20,
   },
   selectedCardText: {
     color: "#fff",

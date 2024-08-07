@@ -1,7 +1,7 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, Button } from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-const NotFound = () => {
+const NotFound = ({ data }) => {
   const navigation = useNavigation();
   return (
     <>
@@ -14,13 +14,13 @@ const NotFound = () => {
           />
         </View>
         <Text style={styles.title}>Oops!</Text>
-        <Text style={styles.subtitle}>Something went wrong!</Text>
-        <Button
-          style={{ borderRadius: 50 }}
-          title="Back to Home"
+        <Text style={styles.subtitle}>{data}</Text>
+        <TouchableOpacity
+          style={styles.button}
           onPress={() => navigation.navigate("Login")}
-          color="#007367"
-        />
+        >
+          <Text style={styles.buttonText}>Back to Home</Text>
+        </TouchableOpacity>
       </View>
     </>
   );
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 20,
+    padding: 10,
     backgroundColor: "#f2f2f2",
   },
   imageContainer: {
@@ -53,8 +53,23 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 20,
+    fontSize: 15,
     marginBottom: 20,
+    alignItems: "center",
+
+    fontWeight: "bold",
+    color: "red",
+  },
+
+  button: {
+    backgroundColor: "#007367",
+    padding: 10,
+    borderRadius: 50,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 13,
   },
 });
 

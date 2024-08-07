@@ -11,6 +11,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Device from "expo-device";
+import NetInfo from "@react-native-community/netinfo";
+import Network from "../errors/Network";
+import NotFound from "../errors/NotFound";
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("2023006357");
@@ -27,6 +30,7 @@ const LoginScreen = ({ navigation }) => {
       //need to create error page
     }
   };
+  const [isConnected, setIsConnected] = useState(true);
 
   const getData = async () => {
     try {
@@ -35,7 +39,7 @@ const LoginScreen = ({ navigation }) => {
         setUserData(JSON.parse(value));
       }
     } catch (e) {
-      //need to create error page
+      <Network />;
     }
   };
 
@@ -46,7 +50,7 @@ const LoginScreen = ({ navigation }) => {
     };
     getDeviceId();
     getData();
-  }, []);
+  }, [isConnected]);
 
   const storeTokenInDatabase = async (data) => {
     try {
@@ -63,12 +67,18 @@ const LoginScreen = ({ navigation }) => {
           }),
         }
       );
-
-      if (response.status !== 200) {
-        //need to create error page
-      }
     } catch (error) {
+      <Network />;
       //need to create error page
+    }
+  };
+
+  const checkInternetAndNavigate = async () => {
+    const state = await NetInfo.fetch();
+    if (state.isConnected) {
+      handleLogin();
+    } else {
+      setIsConnected(false);
     }
   };
 
@@ -93,34 +103,16 @@ const LoginScreen = ({ navigation }) => {
         await storeTokenInDatabase(data);
         navigation.navigate("Home");
       } else {
-        Alert.alert(
-          "Invalid Credentials",
-          "Please enter valid details",
-          [
-            {
-              text: "Cancel",
-              style: "cancel",
-            },
-            {
-              text: "OK",
-            },
-          ],
-          { cancelable: false }
-        );
+        checkInternetAndNavigate();
       }
     } catch (error) {
-      Alert.alert(
-        "Login Error",
-        "An error occurred during login. Please try again later.",
-        [
-          {
-            text: "OK",
-          },
-        ],
-        { cancelable: false }
-      );
+      checkInternetAndNavigate();
     }
   };
+
+  if (!isConnected) {
+    return <Network />;
+  }
 
   return (
     <View style={styles.container}>
@@ -148,7 +140,10 @@ const LoginScreen = ({ navigation }) => {
         />
         {/* {error && <Text style={{ color: "red" }}>Invalid Credentials</Text>} */}
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={checkInternetAndNavigate}
+        >
           <Text style={styles.buttonText}>Login</Text>
           <Ionicons
             name="arrow-forward"

@@ -95,7 +95,6 @@ const HomeScreen = ({ navigation = {} }) => {
     setIsConnected(state.isConnected);
   };
   const fetchGymSchedules = async (date, location) => {
-    console.log("date, locatio: ", date, location);
     try {
       setIsLoading(true);
       setError(false);

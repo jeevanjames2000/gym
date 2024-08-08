@@ -11,6 +11,8 @@ import NetInfo from "@react-native-community/netinfo";
 import { useNavigation } from "@react-navigation/native";
 
 const Network = () => {
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
@@ -22,11 +24,11 @@ const Network = () => {
       </View>
       <Text style={styles.title}>No Internet Connection</Text>
       <Text style={styles.subtitle}>
-        Please check your internet settings and try again.
+        Please check your internet settings and try again later.
       </Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => DevSettings.reload()}
+        onPress={() => navigation.navigate("Login")}
       >
         <Text style={styles.buttonText}>Try again</Text>
       </TouchableOpacity>

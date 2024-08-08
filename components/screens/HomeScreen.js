@@ -95,6 +95,7 @@ const HomeScreen = ({ navigation = {} }) => {
     setIsConnected(state.isConnected);
   };
   const fetchGymSchedules = async (date, location) => {
+    console.log("date, locatio: ", date, location);
     try {
       setIsLoading(true);
       setError(false);
@@ -260,12 +261,12 @@ const HomeScreen = ({ navigation = {} }) => {
       };
 
       try {
-        const value = await AsyncStorage.getItem("token");
+        const tokenvalue = await AsyncStorage.getItem("token");
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${value}`,
+            Authorization: `Bearer ${tokenvalue}`,
           },
           body: JSON.stringify(bookingData),
         });
@@ -282,7 +283,7 @@ const HomeScreen = ({ navigation = {} }) => {
           setBookedSlots([...bookedSlots, selectedTime]);
           setSlotConfirmationVisible(true);
           setStoreErr(responseData);
-          fetchGymSchedules();
+          fetchGymSchedules(selectedDate, value);
         } else {
           setResLoading(false);
           setSlotConfirmationVisible(true);

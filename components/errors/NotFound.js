@@ -17,7 +17,7 @@ const NotFound = ({ data }) => {
         <Text style={styles.subtitle}>{data}</Text>
         <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate("Login")}
+          onPress={() => navigation.navigate("Home")}
         >
           <Text style={styles.buttonText}>Back to Home</Text>
         </TouchableOpacity>

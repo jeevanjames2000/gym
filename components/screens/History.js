@@ -132,21 +132,21 @@ const History = () => {
                   <>
                     <Ionicons
                       name={
-                        item.attendance === "present"
+                        item.attendance === "P"
                           ? "checkmark-circle-outline"
                           : "close-circle-outline"
                       }
                       size={20}
-                      color={item.attendance === "present" ? "green" : "red"}
+                      color={item.attendance === "P" ? "green" : "red"}
                     />
                     <Text
                       style={
-                        item.attendance === "present"
+                        item.attendance === "P"
                           ? styles.confirmed
                           : styles.cancelled
                       }
                     >
-                      {item.attendance}
+                      {item.attendance === "P" ? "Present" : "Absent"}
                     </Text>
                   </>
                 )}

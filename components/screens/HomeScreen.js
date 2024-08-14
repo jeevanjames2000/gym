@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -39,54 +39,37 @@ const HomeScreen = ({ navigation = {} }) => {
   ];
   const [filteredItems, setFilteredItems] = useState([]);
 
-  const filterItems = (data) => {
-    const { gender, campus } = data.stdprofile[0];
-
-    let filtered = items.filter((item) => {
-      if (campus === "VSP") {
-        setValue("GYM");
-
-        return item.value === "GYM";
-      }
-
-      if (campus === "HYD") {
-        if (gender === "M") {
-          return item.value === "Block-C" || item.value === "Campus";
+  const filterItems = useCallback(
+    (data) => {
+      const { gender, campus } = data.stdprofile[0];
+      let filtered = items.filter((item) => {
+        switch (campus) {
+          case "VSP":
+            setValue("GYM");
+            return item.value === "GYM";
+          case "HYD":
+          case "BLR":
+            if (gender === "M") {
+              setValue("Block-C");
+              return item.value === "Block-C" || item.value === "Campus";
+            }
+            return (
+              item.value === "Block-C" ||
+              item.value === "Girls Hostel" ||
+              item.value === "Campus"
+            );
+          default:
+            return gender === "M"
+              ? item.value === "GYM" ||
+                  item.value === "Block-C" ||
+                  item.value === "Campus"
+              : true;
         }
-        setValue("Block-C");
-
-        return (
-          item.value === "Block-C" ||
-          item.value === "Girls Hostel" ||
-          item.value === "Campus"
-        );
-      }
-
-      if (campus === "BLR") {
-        if (gender === "M") {
-          setValue("Block-C");
-          return item.value === "Block-C" || item.value === "Campus";
-        }
-        return (
-          item.value === "Block-C" ||
-          item.value === "Girls Hostel" ||
-          item.value === "Campus"
-        );
-      }
-
-      if (gender === "M") {
-        return (
-          item.value === "GYM" ||
-          item.value === "Block-C" ||
-          item.value === "Campus"
-        );
-      }
-
-      return true;
-    });
-
-    setFilteredItems(filtered);
-  };
+      });
+      setFilteredItems(filtered);
+    },
+    [items]
+  );
 
   const [isConnected, setIsConnected] = useState(true);
 
@@ -240,61 +223,65 @@ const HomeScreen = ({ navigation = {} }) => {
     }
   };
 
-  const handleBookSlot = async () => {
+  const handleBookSlot = useCallback(async () => {
+    if (!selectedTime || bookedSlots.includes(selectedTime)) return;
+
     setResLoading(true);
     closeModal();
-    if (selectedTime && !bookedSlots.includes(selectedTime)) {
-      const formattedDate = selectedDate.toISOString().split("T")[0];
-      const apiUrl =
-        "https://sports1.gitam.edu/slot/gym/insertGymMasterSchedulingSQL";
 
-      const bookingData = {
-        masterID: String(slottime.ID),
-        Gym_sheduling_id: slottime.Gym_sheduling_id,
-        regdNo: storage,
-        start_date: formattedDate,
-        start_time: slottime.start_time,
-        end_time: slottime.end_time,
-        Location: slottime.Location,
-        campus: slottime.campus,
-      };
+    const formattedDate = selectedDate.toISOString().split("T")[0];
+    const apiUrl =
+      "https://sports1.gitam.edu/slot/gym/insertGymMasterSchedulingSQL";
 
-      try {
-        const tokenvalue = await AsyncStorage.getItem("token");
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${tokenvalue}`,
-          },
-          body: JSON.stringify(bookingData),
-        });
-        const contentType = response.headers.get("content-type");
-        let responseData;
-        if (contentType && contentType.includes("application/json")) {
-          responseData = await response.json();
-        } else {
-          responseData = await response.text();
-        }
+    const bookingData = {
+      masterID: String(slottime.ID),
+      Gym_sheduling_id: slottime.Gym_sheduling_id,
+      regdNo: storage,
+      start_date: formattedDate,
+      start_time: slottime.start_time,
+      end_time: slottime.end_time,
+      Location: slottime.Location,
+      campus: slottime.campus,
+    };
 
-        if (response.status === 200) {
-          setResLoading(false);
-          setBookedSlots([...bookedSlots, selectedTime]);
-          setSlotConfirmationVisible(true);
-          setStoreErr(responseData);
-          fetchGymSchedules(selectedDate, value);
-        } else {
-          setResLoading(false);
-          setSlotConfirmationVisible(true);
-          setStoreErr(responseData);
-        }
-      } catch (error) {
-        setSlotConfirmationVisible(true);
-        setResLoading(false);
-        Alert.alert("Error", "Failed to book slot");
+    try {
+      const tokenvalue = await AsyncStorage.getItem("token");
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenvalue}`,
+        },
+        body: JSON.stringify(bookingData),
+      });
+
+      const contentType = response.headers.get("content-type");
+      const responseData =
+        contentType && contentType.includes("application/json")
+          ? await response.json()
+          : await response.text();
+
+      if (response.status === 200) {
+        setBookedSlots((prev) => [...prev, selectedTime]);
       }
+
+      setStoreErr(responseData);
+      setSlotConfirmationVisible(true);
+      fetchGymSchedules(selectedDate, value);
+    } catch (error) {
+      Alert.alert("Error", "Failed to book slot");
+    } finally {
+      setResLoading(false);
     }
-  };
+  }, [
+    selectedTime,
+    bookedSlots,
+    selectedDate,
+    value,
+    storage,
+    slottime,
+    closeModal,
+  ]);
 
   const handleRouteBack = () => {
     setSlotConfirmationVisible(false);
@@ -460,7 +447,7 @@ const HomeScreen = ({ navigation = {} }) => {
                   style={[
                     styles.dateItem,
                     date.isSame(selectedDate, "day") && styles.selectedDateItem,
-                    date.diff(moment(), "days") >= 2 && styles.disabledDateItem, // Apply disabled styles
+                    date.diff(moment(), "days") >= 2 && styles.disabledDateItem,
                   ]}
                   onPress={() => handleDateSelect(date)}
                   disabled={date.diff(moment(), "days") >= 2}
@@ -571,21 +558,6 @@ const HomeScreen = ({ navigation = {} }) => {
                 )}
                 {renderTimeSlots(availableTimeSlots.morning)}
               </View>
-              {/* <View style={styles.card}>
-                <Text style={styles.cardTitle}>Afternoon</Text>
-                {availableTimeSlots?.afternoon?.length === 0 && (
-                  <Text
-                    style={{
-                      color: "red",
-                      textAlign: "center",
-                      fontWeight: "700",
-                    }}
-                  >
-                    No Slots Available
-                  </Text>
-                )}
-                {renderTimeSlots(availableTimeSlots.afternoon)}
-              </View> */}
               <View style={styles.card}>
                 <Text style={styles.cardTitle}>Evening</Text>
                 {availableTimeSlots?.evening?.length === 0 && (

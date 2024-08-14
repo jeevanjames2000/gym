@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
+  FlatList,
   TouchableOpacity,
   Image,
   Alert,
@@ -13,56 +13,59 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import NotFound from "../errors/NotFound";
+
 const Slots = ({ navigation }) => {
-  const [slotsdata, setSlotsData] = useState([]);
+  const [slotsData, setSlotsData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
   const [error, setError] = useState(null);
-  const isSameDate = (slot) => {
+
+  const isSameDate = useCallback((slot) => {
     const startDateStr = slot.start_date.split("T")[0];
     const startTimeStr = slot.start_time;
-    function convertTo24Hour(time) {
+
+    const convertTo24Hour = (time) => {
       const [timePart, modifier] = time.split(" ");
       let [hours, minutes] = timePart.split(":");
-      if (!hours || !minutes) {
-        return "00:00";
-      }
-      if (hours === "12") {
-        hours = "00";
-      }
-      if (modifier === "PM" && hours !== "00") {
-        hours = parseInt(hours, 10) + 12;
-      }
-      hours = hours.toString().padStart(2, "0");
-      return `${hours}:${minutes}`;
-    }
+      if (!hours || !minutes) return "00:00";
+      if (hours === "12") hours = "00";
+      if (modifier === "PM" && hours !== "00") hours = parseInt(hours, 10) + 12;
+      return `${hours.toString().padStart(2, "0")}:${minutes}`;
+    };
+
     const startTime24Hour = convertTo24Hour(startTimeStr);
-    const startDateTimeStr = `${startDateStr}T${startTime24Hour}:00`;
-    const startDateTime = new Date(startDateTimeStr);
+    const startDateTime = new Date(`${startDateStr}T${startTime24Hour}:00`);
     const oneHourBeforeStart = new Date(
       startDateTime.getTime() - 60 * 60 * 1000
     );
     const now = new Date();
+
     return now < oneHourBeforeStart;
-  };
-  const handleDelete = async (slot) => {
-    const value = await AsyncStorage.getItem("token");
-    const deleteResponse = await fetch(
-      `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${value}`,
-        },
-        body: JSON.stringify({
-          regdNo: storage,
-          masterID: slot.masterID,
-        }),
-      }
-    );
-    const res = deleteResponse;
-  };
+  }, []);
+
+  const handleDelete = useCallback(
+    async (slot) => {
+      const value = await AsyncStorage.getItem("token");
+      await fetch(
+        `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${value}`,
+          },
+          body: JSON.stringify({
+            regdNo: storage,
+            masterID: slot.masterID,
+            message: null,
+            status: "cancelled",
+          }),
+        }
+      );
+    },
+    [storage]
+  );
+
   useEffect(() => {
     const fetchData = async () => {
       const value = await AsyncStorage.getItem("myKey");
@@ -72,8 +75,9 @@ const Slots = ({ navigation }) => {
     };
     fetchData();
   }, []);
+
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       const fetchGymSchedules = async () => {
         try {
           setIsLoading(true);
@@ -91,124 +95,133 @@ const Slots = ({ navigation }) => {
           const data = await response.json();
           if (response.ok) {
             setSlotsData(data);
-            setIsLoading(false);
           } else {
             setError(data);
-            setIsLoading(false);
           }
         } catch (error) {
           setError(error);
+        } finally {
           setIsLoading(false);
         }
       };
+
       if (storage) {
         fetchGymSchedules();
       }
     }, [storage])
   );
-  const handleUpdatePress = (slot) => {
-    Alert.alert(
-      "Confirmation",
-      "Are you sure to update the current slots?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "OK",
-          onPress: () => {
-            const data = "Update";
-            handleDelete(slot);
-            navigation.navigate("Gym");
+
+  const handleUpdatePress = useCallback(
+    (slot) => {
+      Alert.alert(
+        "Confirmation",
+        "Are you sure to update the current slots?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
           },
-        },
-      ],
-      { cancelable: false }
-    );
-  };
-  const formatDate = (dateString) => {
+          {
+            text: "OK",
+            onPress: () => {
+              handleDelete(slot);
+              navigation.navigate("Gym");
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+    },
+    [handleDelete, navigation]
+  );
+
+  const formatDate = useCallback((dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString();
-  };
-  const renderSlotDetails = (slot, index) => (
-    <View key={index} style={styles.card}>
-      {isSameDate(slot) && (
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={() => handleUpdatePress(slot)}
-        >
-          <Text style={styles.updateText}>Cancel</Text>
-        </TouchableOpacity>
-      )}
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name={slot.start_time.slice(-2) === "AM" ? "sunny" : "partly-sunny"}
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>
-          {slot.start_time.slice(-2) === "AM" ? "Morning" : "Evening"}
-        </Text>
+  }, []);
+
+  const renderSlotDetails = useCallback(
+    ({ item: slot, index }) => (
+      <View key={index} style={styles.card}>
+        {isSameDate(slot) && (
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={() => handleUpdatePress(slot)}
+          >
+            <Text style={styles.updateText}>Cancel</Text>
+          </TouchableOpacity>
+        )}
+        <View style={styles.detailContainer}>
+          <Ionicons
+            name={slot.start_time.slice(-2) === "AM" ? "sunny" : "partly-sunny"}
+            size={24}
+            color="#3498db"
+            style={styles.icon}
+          />
+          <Text style={styles.detailText}>
+            {slot.start_time.slice(-2) === "AM" ? "Morning" : "Evening"}
+          </Text>
+        </View>
+        <View style={styles.detailContainer}>
+          <Ionicons
+            name="time-outline"
+            size={24}
+            color="#3498db"
+            style={styles.icon}
+          />
+          <Text style={styles.detailText}>
+            {slot.start_time} - {slot.end_time}
+          </Text>
+        </View>
+        <View style={styles.detailContainer}>
+          <Ionicons
+            name="person-outline"
+            size={24}
+            color="#3498db"
+            style={styles.icon}
+          />
+          <Text style={styles.detailText}>{slot.regdNo}</Text>
+        </View>
+        <View style={styles.detailContainer}>
+          <Ionicons
+            name="location-outline"
+            size={24}
+            color="#3498db"
+            style={styles.icon}
+          />
+          <Text style={styles.detailText}>{slot.Location}</Text>
+        </View>
+        <View style={styles.detailContainer}>
+          <Ionicons
+            name="school-outline"
+            size={24}
+            color="#3498db"
+            style={styles.icon}
+          />
+          <Text style={styles.detailText}>{slot.campus}</Text>
+        </View>
+        <View style={styles.detailContainer}>
+          <Ionicons
+            name="calendar-outline"
+            size={24}
+            color="#3498db"
+            style={styles.icon}
+          />
+          <Text style={styles.detailText}>
+            {formatDate(slot.start_date)} - {formatDate(slot.end_date)}
+          </Text>
+        </View>
+        <View style={styles.imgcontainer}>
+          <Image
+            style={{ width: 330, height: 330 }}
+            source={{ uri: slot.qr_code }}
+          />
+        </View>
       </View>
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="time-outline"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>
-          {slot.start_time} - {slot.end_time}
-        </Text>
-      </View>
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="person-outline"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>{slot.regdNo}</Text>
-      </View>
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="location-outline"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>{slot.Location}</Text>
-      </View>
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="school-outline"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>{slot.campus}</Text>
-      </View>
-      <View style={styles.detailContainer}>
-        <Ionicons
-          name="calendar-outline"
-          size={24}
-          color="#3498db"
-          style={styles.icon}
-        />
-        <Text style={styles.detailText}>
-          {formatDate(slot.start_date)} - {formatDate(slot.end_date)}
-        </Text>
-      </View>
-      <View style={styles.imgcontainer}>
-        <Image
-          style={{ width: 300, height: 300 }}
-          source={{ uri: slot.qr_code }}
-        />
-      </View>
-    </View>
+    ),
+    [isSameDate, handleUpdatePress, formatDate]
   );
+
   if (isLoading) {
     return (
       <View style={styles.modalLoading}>
@@ -217,20 +230,23 @@ const Slots = ({ navigation }) => {
       </View>
     );
   }
-  if (!isLoading && (slotsdata.length === 0 || error)) {
-    return <NotFound data={"No data found!"} />;
+
+  if (!isLoading && (slotsData.length === 0 || error)) {
+    return <NotFound data="No data found!" />;
   }
-  const renderGymSlots = () => {
-    return slotsdata.map(renderSlotDetails);
-  };
+
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {renderGymSlots()}
-      </ScrollView>
+      <FlatList
+        contentContainerStyle={styles.scrollViewContent}
+        data={slotsData}
+        renderItem={renderSlotDetails}
+        keyExtractor={(item, index) => index.toString()}
+      />
     </View>
   );
 };
+
 const styles = StyleSheet.create({
   imgcontainer: {
     padding: 20,

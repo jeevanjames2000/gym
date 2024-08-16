@@ -115,7 +115,7 @@ const Slots = ({ navigation }) => {
     (slot) => {
       Alert.alert(
         "Confirmation",
-        "Are you sure to update the current slots?",
+        "Are you sure to cancel the slot?",
         [
           {
             text: "Cancel",
@@ -125,7 +125,7 @@ const Slots = ({ navigation }) => {
             text: "OK",
             onPress: () => {
               handleDelete(slot);
-              navigation.navigate("Gym");
+              navigation.navigate("Home", { render: true });
             },
           },
         ],

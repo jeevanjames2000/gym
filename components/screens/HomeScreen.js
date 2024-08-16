@@ -15,6 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import moment from "moment";
 import Network from "../errors/Network";
+import { useFocusEffect } from "@react-navigation/native";
 
 const HomeScreen = ({ navigation = {} }) => {
   const [selectedDate, setSelectedDate] = useState(moment());
@@ -22,7 +23,6 @@ const HomeScreen = ({ navigation = {} }) => {
   const [selectedTime, setSelectedTime] = useState(null);
   const [availableTimeSlots, setAvailableTimeSlots] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
-  const [bookedSlots, setBookedSlots] = useState([]);
   const [slotsdata, setSlotsData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -111,7 +111,6 @@ const HomeScreen = ({ navigation = {} }) => {
           occupied: slot.occupied,
           disabled: new Date(slot.start_time) <= new Date(),
           noAvailableSlots: slot.available <= 0,
-          booked: bookedSlots.includes(slot.start_time),
         }));
         setSlotsData(slots);
       }
@@ -151,7 +150,12 @@ const HomeScreen = ({ navigation = {} }) => {
     checkInternetAndNavigate();
 
     fetchData();
-  }, [value, selectedDate]);
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchGymSchedules(selectedDate, value);
+    });
+
+    return unsubscribe;
+  }, [value, selectedDate, navigation]);
 
   useEffect(() => {
     const categorizeTimeSlots = () => {
@@ -187,7 +191,6 @@ const HomeScreen = ({ navigation = {} }) => {
           disabled:
             isToday(currentTime, selectedDate) && slotTime <= currentTime,
           noAvailableSlots: slot.available <= 0,
-          booked: bookedSlots.includes(slot.start_time),
         };
 
         if (hours < 12) {
@@ -205,7 +208,7 @@ const HomeScreen = ({ navigation = {} }) => {
     };
 
     categorizeTimeSlots();
-  }, [slotsdata, bookedSlots]);
+  }, [slotsdata]);
 
   const handleValueChange = (newValue) => {
     setValue(newValue);
@@ -224,7 +227,7 @@ const HomeScreen = ({ navigation = {} }) => {
   };
 
   const handleBookSlot = useCallback(async () => {
-    if (!selectedTime || bookedSlots.includes(selectedTime)) return;
+    if (!selectedTime) return;
 
     setResLoading(true);
     closeModal();
@@ -261,10 +264,6 @@ const HomeScreen = ({ navigation = {} }) => {
           ? await response.json()
           : await response.text();
 
-      if (response.status === 200) {
-        setBookedSlots((prev) => [...prev, selectedTime]);
-      }
-
       setStoreErr(responseData);
       setSlotConfirmationVisible(true);
       fetchGymSchedules(selectedDate, value);
@@ -273,15 +272,7 @@ const HomeScreen = ({ navigation = {} }) => {
     } finally {
       setResLoading(false);
     }
-  }, [
-    selectedTime,
-    bookedSlots,
-    selectedDate,
-    value,
-    storage,
-    slottime,
-    closeModal,
-  ]);
+  }, [selectedTime, selectedDate, value, storage, slottime, closeModal]);
 
   const handleRouteBack = () => {
     setSlotConfirmationVisible(false);

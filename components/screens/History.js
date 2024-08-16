@@ -18,16 +18,50 @@ const History = () => {
   const [slotsdata, setSlotsData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [statusFilter, setStatusFilter] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("All");
   const [openStatus, setOpenStatus] = useState(false);
+
+  const defaultStatuses = [
+    { key: "All", name: "All" },
+    { key: "booked", name: "Booked" },
+    { key: "cancelled", name: "Cancelled" },
+    { key: "N", name: "Absent" },
+    { key: "P", name: "Present" },
+  ];
+
   const uniqueStatuses = useMemo(() => {
-    return [...new Set(slotsdata.map((item) => item.status))];
+    const statusesFromData = [
+      ...new Set(slotsdata.map((item) => item.status)),
+      ...new Set(slotsdata.map((item) => item.attendance)),
+    ];
+
+    return [
+      ...defaultStatuses,
+      ...statusesFromData
+        .filter((status) => status)
+        .filter(
+          (status) => !defaultStatuses.some((item) => item.key.endsWith(status))
+        )
+        .map((status) => ({
+          key: `dynamic_${status}`,
+          name:
+            status === "P"
+              ? "Present"
+              : status === "N"
+              ? "Absent"
+              : status.charAt(0).toUpperCase() + status.slice(1),
+        })),
+    ];
   }, [slotsdata]);
 
   const filteredData = useMemo(() => {
-    return slotsdata.filter((item) =>
-      statusFilter ? item.status === statusFilter : true
-    );
+    return slotsdata.filter((item) => {
+      if (statusFilter === "All") {
+        return true;
+      }
+
+      return item.status === statusFilter || item.attendance === statusFilter;
+    });
   }, [slotsdata, statusFilter]);
 
   const fetchGymSchedules = useCallback(async () => {
@@ -151,12 +185,12 @@ const History = () => {
           open={openStatus}
           value={statusFilter}
           items={uniqueStatuses.map((status) => ({
-            label: status,
-            value: status,
+            label: status.name,
+            value: status.key,
           }))}
           setOpen={setOpenStatus}
           setValue={setStatusFilter}
-          placeholder="Filter by status"
+          placeholder="Filter by status or attendance"
           style={styles.dropdown}
         />
       </View>

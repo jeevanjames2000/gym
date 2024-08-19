@@ -25,6 +25,10 @@ const Home = ({ navigation }) => {
     return `${hours.toString().padStart(2, "0")}:${minutes}`;
   };
 
+  const currentDate = new Date();
+  const localDate = currentDate.getTimezoneOffset();
+
+
   const isExpired = (slot) => {
     const dateStr = slot.start_date.split("T")[0];
     const currentDate = new Date();
@@ -65,7 +69,7 @@ const Home = ({ navigation }) => {
             body: JSON.stringify({
               regdNo: slot.regdNo,
               masterID: slot.masterID,
-              message: "N",
+              message: "Absent",
               status: "booked",
             }),
           }

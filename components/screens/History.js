@@ -25,8 +25,8 @@ const History = () => {
     { key: "All", name: "All" },
     { key: "booked", name: "Booked" },
     { key: "cancelled", name: "Cancelled" },
-    { key: "N", name: "Absent" },
-    { key: "P", name: "Present" },
+    { key: "Absent", name: "Absent" },
+    { key: "Present", name: "Present" },
   ];
 
   const uniqueStatuses = useMemo(() => {
@@ -44,12 +44,7 @@ const History = () => {
         )
         .map((status) => ({
           key: `dynamic_${status}`,
-          name:
-            status === "P"
-              ? "Present"
-              : status === "N"
-              ? "Absent"
-              : status.charAt(0).toUpperCase() + status.slice(1),
+          name: status,
         })),
     ];
   }, [slotsdata]);
@@ -139,21 +134,29 @@ const History = () => {
               <>
                 <Ionicons
                   name={
-                    item.attendance === "P"
+                    item.attendance === "Present"
                       ? "checkmark-circle-outline"
+                      : item.attendance === "Pending"
+                      ? "time-outline"
                       : "close-circle-outline"
                   }
                   size={20}
-                  color={item.attendance === "P" ? "green" : "red"}
+                  color={
+                    item.attendance === "Present"
+                      ? "green"
+                      : item.attendance === "Pending"
+                      ? "orange"
+                      : "red"
+                  }
                 />
                 <Text
                   style={
-                    item.attendance === "P"
+                    item.attendance === "Present"
                       ? styles.confirmed
                       : styles.cancelled
                   }
                 >
-                  {item.attendance === "P" ? "Present" : "Absent"}
+                  {item.attendance}
                 </Text>
               </>
             )}

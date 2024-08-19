@@ -43,72 +43,93 @@ const Slots = ({ navigation }) => {
     return now < oneHourBeforeStart;
   }, []);
 
-  const handleDelete = useCallback(
-    async (slot) => {
-      const value = await AsyncStorage.getItem("token");
-      await fetch(
-        `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo`,
+  // Memoize fetchGymSchedules so it doesn't get recreated unnecessarily
+  const fetchGymSchedules = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = await AsyncStorage.getItem("token");
+      if (!token) throw new Error("Token not found");
+
+      const response = await fetch(
+        `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`,
         {
-          method: "DELETE",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${value}`,
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            regdNo: storage,
-            masterID: slot.masterID,
-            message: null,
-            status: "cancelled",
-          }),
         }
       );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSlotsData(data);
+      } else {
+       
+        setError(data);
+      }
+    } catch (error) {
+ 
+      setError(error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [storage]);
+
+  const handleDelete = useCallback(
+    async (slot) => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) throw new Error("Token not found");
+
+        const response = await fetch(
+          `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              regdNo: storage,
+              masterID: slot.masterID,
+              message: null,
+              status: "cancelled",
+            }),
+          }
+        );
+
+       
+        fetchGymSchedules(); 
+      } catch (error) {
+     
+      }
     },
-    [storage]
+    [storage, fetchGymSchedules] 
   );
 
   useEffect(() => {
     const fetchData = async () => {
-      const value = await AsyncStorage.getItem("myKey");
-      if (value !== null) {
-        setStorage(value);
+      try {
+        const value = await AsyncStorage.getItem("myKey");
+        if (value !== null) {
+          setStorage(value);
+        }
+      } catch (error) {
+       
       }
     };
+
     fetchData();
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      const fetchGymSchedules = async () => {
-        try {
-          setIsLoading(true);
-          setError(null);
-          const value = await AsyncStorage.getItem("token");
-          const response = await fetch(
-            `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`,
-            {
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${value}`,
-              },
-            }
-          );
-          const data = await response.json();
-          if (response.ok) {
-            setSlotsData(data);
-          } else {
-            setError(data);
-          }
-        } catch (error) {
-          setError(error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
       if (storage) {
         fetchGymSchedules();
       }
-    }, [storage])
+    }, [storage, fetchGymSchedules])
   );
 
   const handleUpdatePress = useCallback(
@@ -125,7 +146,7 @@ const Slots = ({ navigation }) => {
             text: "OK",
             onPress: () => {
               handleDelete(slot);
-              navigation.navigate("Home", { render: true });
+              // navigation.navigate("Home", { render: true });
             },
           },
         ],
@@ -232,11 +253,11 @@ const Slots = ({ navigation }) => {
   }
 
   if (!isLoading && (slotsData.length === 0 || error)) {
-    return <NotFound data="No data found!" />;
+    return <NotFound data="No slots found!" />;
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container}> 
       <FlatList
         contentContainerStyle={styles.scrollViewContent}
         data={slotsData}

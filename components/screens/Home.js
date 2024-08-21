@@ -25,33 +25,16 @@ const Home = ({ navigation }) => {
     return `${hours.toString().padStart(2, "0")}:${minutes}`;
   };
 
-  const currentDate = new Date();
-  const localDate = currentDate.getTimezoneOffset();
-
-
   const isExpired = (slot) => {
-    const dateStr = slot.start_date.split("T")[0];
     const currentDate = new Date();
-    const currentDateStr = currentDate.toISOString().split("T")[0];
 
-    if (dateStr <= currentDateStr) {
-      const endTimeStr = slot.end_time;
-      const endTime24Hour = convertTo24Hour(endTimeStr);
+    const dateStr = slot.start_date.split("T")[0];
+    const endTimeStr = slot.end_time;
+    const endTime24Hour = convertTo24Hour(endTimeStr);
 
-      const endDateTime = new Date(`${dateStr}T${endTime24Hour}:00`);
+    const endDateTime = new Date(`${dateStr}T${endTime24Hour}:00`);
 
-      const adjustedEndDateTime = new Date(
-        endDateTime.getTime() - endDateTime.getTimezoneOffset() * 60000
-      );
-
-      const localCurrentTime = new Date(
-        currentDate.getTime() - currentDate.getTimezoneOffset() * 60000
-      );
-
-      return localCurrentTime >= adjustedEndDateTime;
-    }
-
-    return false;
+    return currentDate >= endDateTime;
   };
 
   const handleDelete = useCallback(async (slot) => {
@@ -108,6 +91,19 @@ const Home = ({ navigation }) => {
             masterID: slot.masterID,
             status: slot.status,
           };
+          const newSlots = data.map((slot) => ({
+            start_time: slot.start_time,
+            start_date: slot.start_date,
+            regdNo: slot.regdNo,
+            end_date: slot.end_date,
+            end_time: slot.end_time,
+            masterID: slot.masterID,
+            status: slot.status,
+          }));
+
+          let slotsArray = [...newSlots];
+
+          await AsyncStorage.setItem("Bookedslot", JSON.stringify(slotsArray));
           if (isExpired(slotDetails)) {
             await AsyncStorage.setItem(`slots`, JSON.stringify(slotDetails));
             await handleDelete(slotDetails);
@@ -135,6 +131,7 @@ const Home = ({ navigation }) => {
     });
     if (response.status === 200) {
       handleNavigate("Login");
+      await AsyncStorage.removeItem("Bookedslot");
     } else {
       handleNavigate("Login");
     }

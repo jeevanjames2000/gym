@@ -18,7 +18,7 @@ import NotFound from "../errors/NotFound";
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("2023006357");
   const [password, setPassword] = useState("Gitam@123");
-  const [deviceId, setDeviceId] = useState();
+  const [deviceId, setDeviceId] = useState("154874551");
 
   const [userdata, setUserData] = useState([]);
   const [error, setError] = useState(false);
@@ -27,9 +27,7 @@ const LoginScreen = ({ navigation }) => {
       await AsyncStorage.setItem("data", JSON.stringify(data));
       await AsyncStorage.setItem("myKey", data.stdprofile[0].regdno);
       await AsyncStorage.setItem("token", data.token);
-    } catch (e) {
-      //need to create error page
-    }
+    } catch (e) {}
   };
   const [isConnected, setIsConnected] = useState(true);
 
@@ -47,7 +45,7 @@ const LoginScreen = ({ navigation }) => {
   useEffect(() => {
     const getDeviceId = async () => {
       const id = Device.osBuildId;
-      setDeviceId(id);
+      // setDeviceId(id);
     };
     getDeviceId();
     getData();
@@ -93,7 +91,7 @@ const LoginScreen = ({ navigation }) => {
         body: JSON.stringify({
           UserName: username,
           Password: password,
-          deviceid: "154874551",
+          deviceid: deviceId,
         }),
       });
 
@@ -123,7 +121,10 @@ const LoginScreen = ({ navigation }) => {
     setPassword(text);
     if (error) setError(null);
   };
-
+  const handleDevicechange = (text) => {
+    setDeviceId(text);
+    if (error) setError(null);
+  };
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
@@ -150,6 +151,15 @@ const LoginScreen = ({ navigation }) => {
           value={password}
           secureTextEntry
           onChangeText={handlePasswordChange}
+        />
+        <TextInput
+          style={[
+            error ? styles.errorfield : styles.passworcinput,
+            error ? styles.errorInput : null,
+          ]}
+          placeholder="Enter Device id"
+          value={deviceId}
+          onChangeText={handleDevicechange}
         />
         {error && <Text style={styles.errorText}>{error}</Text>}
         <TouchableOpacity

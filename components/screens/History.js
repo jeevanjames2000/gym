@@ -60,13 +60,16 @@ const History = () => {
   }, [slotsdata, statusFilter]);
 
   const fetchGymSchedules = useCallback(async () => {
+    const storage = await AsyncStorage.getItem("myKey");
+    console.log("storage: ", storage);
     const value = await AsyncStorage.getItem("token");
     try {
+      console.log("call");
       setIsLoading(true);
       setError(null);
 
       const response = await fetch(
-        `https://sports1.gitam.edu/slot/gym/getAllHistory`,
+        `https://sports1.gitam.edu/slot/gym/getAllHistory/${storage}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -75,6 +78,7 @@ const History = () => {
         }
       );
       const data = await response.json();
+      console.log("data: ", data);
 
       if (response.ok) {
         setSlotsData(data);
@@ -82,6 +86,7 @@ const History = () => {
         setError(data);
       }
     } catch (error) {
+      console.log("error: ", error);
       setError(error);
     } finally {
       setIsLoading(false);
@@ -136,17 +141,17 @@ const History = () => {
                   name={
                     item.attendance === "Present"
                       ? "checkmark-circle-outline"
-                      : item.attendance === "Pending"
-                      ? "time-outline"
-                      : "close-circle-outline"
+                      : // : item.attendance === "Pending"
+                        // ? "time-outline"
+                        "close-circle-outline"
                   }
                   size={20}
                   color={
                     item.attendance === "Present"
                       ? "green"
-                      : item.attendance === "Pending"
-                      ? "orange"
-                      : "red"
+                      : // : item.attendance === "Pending"
+                        // ? "orange"
+                        "red"
                   }
                 />
                 <Text

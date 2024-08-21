@@ -18,6 +18,7 @@ const Slots = ({ navigation }) => {
   const [slotsData, setSlotsData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
+  console.log("storage: ", storage);
   const [error, setError] = useState(null);
 
   const isSameDate = useCallback((slot) => {
@@ -43,7 +44,6 @@ const Slots = ({ navigation }) => {
     return now < oneHourBeforeStart;
   }, []);
 
-  // Memoize fetchGymSchedules so it doesn't get recreated unnecessarily
   const fetchGymSchedules = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -66,11 +66,9 @@ const Slots = ({ navigation }) => {
       if (response.ok) {
         setSlotsData(data);
       } else {
-       
         setError(data);
       }
     } catch (error) {
- 
       setError(error);
     } finally {
       setIsLoading(false);
@@ -100,13 +98,10 @@ const Slots = ({ navigation }) => {
           }
         );
 
-       
-        fetchGymSchedules(); 
-      } catch (error) {
-     
-      }
+        fetchGymSchedules();
+      } catch (error) {}
     },
-    [storage, fetchGymSchedules] 
+    [storage, fetchGymSchedules]
   );
 
   useEffect(() => {
@@ -116,9 +111,7 @@ const Slots = ({ navigation }) => {
         if (value !== null) {
           setStorage(value);
         }
-      } catch (error) {
-       
-      }
+      } catch (error) {}
     };
 
     fetchData();
@@ -257,7 +250,7 @@ const Slots = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.container}> 
+    <View style={styles.container}>
       <FlatList
         contentContainerStyle={styles.scrollViewContent}
         data={slotsData}

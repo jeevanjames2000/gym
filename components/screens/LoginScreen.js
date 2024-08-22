@@ -6,21 +6,17 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Device from "expo-device";
 import NetInfo from "@react-native-community/netinfo";
 import Network from "../errors/Network";
-import NotFound from "../errors/NotFound";
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("2023006357");
   const [password, setPassword] = useState("Gitam@123");
   const [deviceId, setDeviceId] = useState("154874551");
-
-  const [userdata, setUserData] = useState([]);
   const [error, setError] = useState(false);
   const storeData = async (data) => {
     try {
@@ -31,24 +27,12 @@ const LoginScreen = ({ navigation }) => {
   };
   const [isConnected, setIsConnected] = useState(true);
 
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem("data");
-      if (value !== null) {
-        setUserData(JSON.parse(value));
-      }
-    } catch (e) {
-      <Network />;
-    }
-  };
-
   useEffect(() => {
     const getDeviceId = async () => {
       const id = Device.osBuildId;
       // setDeviceId(id);
     };
     getDeviceId();
-    getData();
   }, [isConnected]);
 
   const storeTokenInDatabase = async (data) => {
@@ -68,7 +52,6 @@ const LoginScreen = ({ navigation }) => {
       );
     } catch (error) {
       <Network />;
-      //need to create error page
     }
   };
 

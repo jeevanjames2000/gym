@@ -1,13 +1,6 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  StyleSheet,
-  DevSettings,
-} from "react-native";
-import NetInfo from "@react-native-community/netinfo";
+import React from "react";
+import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+
 import { useNavigation } from "@react-navigation/native";
 
 const Network = () => {

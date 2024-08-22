@@ -1,13 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  Button,
-  Image,
-  FlatList,
-} from "react-native";
+import { View, Text, StyleSheet, FlatList } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
@@ -61,10 +53,9 @@ const History = () => {
 
   const fetchGymSchedules = useCallback(async () => {
     const storage = await AsyncStorage.getItem("myKey");
-    console.log("storage: ", storage);
+
     const value = await AsyncStorage.getItem("token");
     try {
-      console.log("call");
       setIsLoading(true);
       setError(null);
 
@@ -78,7 +69,6 @@ const History = () => {
         }
       );
       const data = await response.json();
-      console.log("data: ", data);
 
       if (response.ok) {
         setSlotsData(data);
@@ -86,7 +76,6 @@ const History = () => {
         setError(data);
       }
     } catch (error) {
-      console.log("error: ", error);
       setError(error);
     } finally {
       setIsLoading(false);

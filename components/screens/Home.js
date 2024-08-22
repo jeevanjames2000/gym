@@ -20,20 +20,20 @@ const Home = ({ navigation }) => {
     const [timePart, modifier] = time.split(" ");
     let [hours, minutes] = timePart.split(":");
     if (!hours || !minutes) return "00:00";
-    if (hours === "12") hours = "00";
-    if (modifier === "PM" && hours !== "00") hours = parseInt(hours, 10) + 12;
+    if (modifier === "PM" && hours !== "12") {
+      hours = parseInt(hours, 10) + 12;
+    } else if (modifier === "AM" && hours === "12") {
+      hours = "00";
+    }
     return `${hours.toString().padStart(2, "0")}:${minutes}`;
   };
 
   const isExpired = (slot) => {
     const currentDate = new Date();
-
     const dateStr = slot.start_date.split("T")[0];
     const endTimeStr = slot.end_time;
     const endTime24Hour = convertTo24Hour(endTimeStr);
-
     const endDateTime = new Date(`${dateStr}T${endTime24Hour}:00`);
-
     return currentDate >= endDateTime;
   };
 
@@ -91,19 +91,7 @@ const Home = ({ navigation }) => {
             masterID: slot.masterID,
             status: slot.status,
           };
-          const newSlots = data.map((slot) => ({
-            start_time: slot.start_time,
-            start_date: slot.start_date,
-            regdNo: slot.regdNo,
-            end_date: slot.end_date,
-            end_time: slot.end_time,
-            masterID: slot.masterID,
-            status: slot.status,
-          }));
 
-          let slotsArray = [...newSlots];
-
-          await AsyncStorage.setItem("Bookedslot", JSON.stringify(slotsArray));
           if (isExpired(slotDetails)) {
             await AsyncStorage.setItem(`slots`, JSON.stringify(slotDetails));
             await handleDelete(slotDetails);
@@ -129,9 +117,9 @@ const Home = ({ navigation }) => {
         regdNo: key,
       }),
     });
-    if (response.status === 200) {
+    if (response.ok) {
       handleNavigate("Login");
-      await AsyncStorage.removeItem("Bookedslot");
+      AsyncStorage.removeItem("Bookedslot");
     } else {
       handleNavigate("Login");
     }

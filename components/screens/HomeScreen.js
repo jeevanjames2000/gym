@@ -15,7 +15,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import moment from "moment";
 import Network from "../errors/Network";
-import { useFocusEffect } from "@react-navigation/native";
 
 const HomeScreen = ({ navigation = {} }) => {
   const [selectedDate, setSelectedDate] = useState(moment());
@@ -136,25 +135,56 @@ const HomeScreen = ({ navigation = {} }) => {
     fetchData();
   }, []);
 
+  const [bookedslot, setBookedSlot] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
-      await fetchGymSchedules(selectedDate, value);
-      const timeout = setTimeout(() => {
-        if (isLoading) {
-          setIsLoading(false);
+      try {
+        await fetchGymSchedules(selectedDate, value);
+        const token = await AsyncStorage.getItem("token");
+        const storage = await AsyncStorage.getItem("myKey");
+        const response = await fetch(
+          `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+
+          const newSlots = data.map((slot) => ({
+            start_time: slot.start_time,
+            start_date: slot.start_date,
+            regdNo: slot.regdNo,
+            end_date: slot.end_date,
+            end_time: slot.end_time,
+            masterID: slot.masterID,
+            status: slot.status,
+          }));
+          setBookedSlot(newSlots);
+          await AsyncStorage.setItem("Bookedslot", JSON.stringify(newSlots));
         }
-      }, 10000);
 
-      return () => clearTimeout(timeout);
+        checkInternetAndNavigate();
+      } catch (error) {
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    checkInternetAndNavigate();
 
-    fetchData();
-    const unsubscribe = navigation.addListener("focus", () => {
+    const handleFocus = () => {
       fetchGymSchedules(selectedDate, value);
-    });
+    };
 
-    return unsubscribe;
+    const unsubscribe = navigation.addListener("focus", handleFocus);
+    fetchData();
+
+    return () => unsubscribe();
   }, [value, selectedDate, navigation]);
 
   useEffect(() => {
@@ -185,12 +215,17 @@ const HomeScreen = ({ navigation = {} }) => {
           );
         };
 
+        const isBooked = bookedslot.some((booked) => {
+          return booked.masterID == slot.masterID;
+        });
+
         const newSlot = {
           ...slot,
           end_time: slot.end_time,
           disabled:
             isToday(currentTime, selectedDate) && slotTime <= currentTime,
           noAvailableSlots: slot.available <= 0,
+          booked: isBooked,
         };
 
         if (hours < 12) {
@@ -293,21 +328,30 @@ const HomeScreen = ({ navigation = {} }) => {
                 {
                   borderColor: selectedTime === slot.time ? "#007367" : "#000",
                   backgroundColor: slot.noAvailableSlots
-                    ? "#423F3E"
+                    ? "#CF455C"
                     : !slot.disabled && selectedTime === slot.time
                     ? "#007367"
                     : slot.disabled
                     ? "transparent"
+                    : slot.booked
+                    ? "#B0A4A4"
                     : "#007367",
-                  opacity: slot.disabled || slot.noAvailableSlots ? 0.5 : 1,
+
+                  // opacity:
+                  //   slot.disabled || slot.noAvailableSlots || slot.booked
+                  //     ? 0.5
+                  //     : 1,
                 },
               ]}
-              disabled={slot.disabled || slot.noAvailableSlots}
+              disabled={slot.booked || slot.disabled || slot.noAvailableSlots}
             >
               <Text
                 style={{
-                  color:
-                    slot.disabled || slot.noAvailableSlots ? "#000" : "#fff",
+                  color: slot.noAvailableSlots
+                    ? "#ffff"
+                    : slot.booked || slot.disabled
+                    ? "#000"
+                    : "#fff",
                 }}
               >
                 {slot.time}
@@ -426,6 +470,8 @@ const HomeScreen = ({ navigation = {} }) => {
   if (!isConnected) {
     return <Network data={"Gym"} />;
   }
+
+  const [tooltipVisible, setTooltipVisible] = useState(false);
   return (
     <>
       <View style={styles.container}>
@@ -490,7 +536,68 @@ const HomeScreen = ({ navigation = {} }) => {
         <View style={styles.timeSlots}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Available Slots</Text>
+            <TouchableOpacity
+              onPress={() => setTooltipVisible(true)}
+              style={styles.infoButton}
+            >
+              <Ionicons
+                name="information-circle-outline"
+                size={25}
+                color="#333"
+              />
+            </TouchableOpacity>
           </View>
+
+          {tooltipVisible && (
+            <Modal
+              transparent={true}
+              animationType="slide"
+              visible={tooltipVisible}
+              onRequestClose={() => setTooltipVisible(false)}
+            >
+              <TouchableOpacity
+                style={styles.tooltipOverlay}
+                onPress={() => setTooltipVisible(false)}
+              >
+                <View style={styles.tooltipContainer}>
+                  <View style={styles.tooltipRow}>
+                    <View style={styles.circleGreen} />
+                    <Text style={styles.tooltipText}>Available Slots</Text>
+                  </View>
+
+                  <View style={styles.tooltipRow}>
+                    <View
+                      style={[
+                        styles.colorIndicator,
+                        { backgroundColor: "gray" },
+                      ]}
+                    />
+                    <Text style={styles.tooltipText}>Booked Slot</Text>
+                  </View>
+
+                  <View style={styles.tooltipRow}>
+                    <View style={styles.circlePink} />
+                    <Text style={styles.tooltipText}>Max Count Reached</Text>
+                  </View>
+                  {/* <View>
+                    <Text
+                      style={{
+                        color: "red",
+                        fontSize: 17,
+                        textAlign: "justify",
+                      }}
+                    >
+                      * Slots can only be updated up to 1 hour before the slot
+                      time!
+                    </Text>
+                    <Text style={{ color: "red", fontSize: 17 }}>
+                      * Only 2 slots allowed per day (AM & PM)
+                    </Text>
+                  </View> */}
+                </View>
+              </TouchableOpacity>
+            </Modal>
+          )}
 
           {isLoading ? (
             <View style={styles.loadingContainer}>
@@ -926,73 +1033,57 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  availableicon: {
-    marginLeft: 5,
+  infoButton: {
+    marginLeft: 8,
   },
-  tooltipContainer: {
-    position: "absolute",
-    zIndex: 1000,
-    top: 25,
-    left: 130,
-    right: 10,
-    bottom: 10,
-    width: 110,
-  },
-  tooltip: {
-    flexDirection: "column",
-    backgroundColor: "#fff",
-    borderColor: "#000",
-    borderWidth: 1,
-    borderRadius: 5,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-    gap: 4,
-  },
-  tooltipItem: {
+  tooltipRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 2,
+    marginBottom: 5,
   },
-  circleWhite: {
-    width: 15,
-    height: 15,
-    backgroundColor: "#fff",
-    borderWidth: 2,
-    borderColor: "#000",
+  circleGreen: {
+    width: 17,
+    height: 17,
     borderRadius: 5,
+    backgroundColor: "#007367",
     marginRight: 5,
   },
   circlePink: {
-    width: 15,
-    height: 15,
-    backgroundColor: "#423F3E",
-    borderWidth: 2,
-    borderColor: "#000",
+    width: 17,
+    height: 17,
     borderRadius: 5,
+    backgroundColor: "#CF455C",
     marginRight: 5,
   },
-  circleGreen: {
-    width: 15,
-    height: 15,
-    backgroundColor: "#007367",
-    borderWidth: 2,
-    borderColor: "#000",
+  colorIndicator: {
+    width: 17,
+    height: 17,
     borderRadius: 5,
     marginRight: 5,
   },
   tooltipText: {
+    fontSize: 18,
     color: "#000",
-    fontSize: 15,
+  },
+  tooltipOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    // backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  tooltipContainer: {
+    backgroundColor: "#fff",
+    padding: 30,
+    borderRadius: 8,
+    elevation: 5,
+    // top: -80,
+    // left: 50,
   },
   disabledDateItem: {
     opacity: 1,
   },
   disabledText: {
-    color: "#ccc", // Fade out disabled text
+    color: "#ccc",
   },
 });
 export default HomeScreen;

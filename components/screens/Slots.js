@@ -18,7 +18,6 @@ const Slots = ({ navigation }) => {
   const [slotsData, setSlotsData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [storage, setStorage] = useState(null);
-  console.log("storage: ", storage);
   const [error, setError] = useState(null);
 
   const isSameDate = useCallback((slot) => {
@@ -40,7 +39,6 @@ const Slots = ({ navigation }) => {
       startDateTime.getTime() - 60 * 60 * 1000
     );
     const now = new Date();
-
     return now < oneHourBeforeStart;
   }, []);
 

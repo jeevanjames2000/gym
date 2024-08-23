@@ -120,7 +120,45 @@ const HomeScreen = ({ navigation = {} }) => {
     }
   };
   const [storage, setStorage] = useState(null);
+  const [bookedslot, setBookedSlot] = useState([]);
 
+  const fetchData = async () => {
+    try {
+      await fetchGymSchedules(selectedDate, value);
+      const token = await AsyncStorage.getItem("token");
+      const storage = await AsyncStorage.getItem("myKey");
+      const response = await fetch(
+        `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+
+        const newSlots = data.map((slot) => ({
+          start_time: slot.start_time,
+          start_date: slot.start_date,
+          regdNo: slot.regdNo,
+          end_date: slot.end_date,
+          end_time: slot.end_time,
+          masterID: slot.masterID,
+          status: slot.status,
+        }));
+        setBookedSlot(newSlots);
+      }
+
+      checkInternetAndNavigate();
+    } catch (error) {
+      setError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   useEffect(() => {
     const fetchData = async () => {
       const value = await AsyncStorage.getItem("myKey");
@@ -135,49 +173,9 @@ const HomeScreen = ({ navigation = {} }) => {
     fetchData();
   }, []);
 
-  const [bookedslot, setBookedSlot] = useState([]);
-
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await fetchGymSchedules(selectedDate, value);
-        const token = await AsyncStorage.getItem("token");
-        const storage = await AsyncStorage.getItem("myKey");
-        const response = await fetch(
-          `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-
-          const newSlots = data.map((slot) => ({
-            start_time: slot.start_time,
-            start_date: slot.start_date,
-            regdNo: slot.regdNo,
-            end_date: slot.end_date,
-            end_time: slot.end_time,
-            masterID: slot.masterID,
-            status: slot.status,
-          }));
-          setBookedSlot(newSlots);
-          await AsyncStorage.setItem("Bookedslot", JSON.stringify(newSlots));
-        }
-
-        checkInternetAndNavigate();
-      } catch (error) {
-        setError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     const handleFocus = () => {
+      fetchData();
       fetchGymSchedules(selectedDate, value);
     };
 
@@ -214,7 +212,6 @@ const HomeScreen = ({ navigation = {} }) => {
             selectedDate.toISOString().split("T")[0]
           );
         };
-
         const isBooked = bookedslot.some((booked) => {
           return booked.masterID == slot.masterID;
         });
@@ -243,7 +240,7 @@ const HomeScreen = ({ navigation = {} }) => {
     };
 
     categorizeTimeSlots();
-  }, [slotsdata]);
+  }, [slotsdata, bookedslot]);
 
   const handleValueChange = (newValue) => {
     setValue(newValue);
@@ -301,7 +298,18 @@ const HomeScreen = ({ navigation = {} }) => {
 
       setStoreErr(responseData);
       setSlotConfirmationVisible(true);
-      fetchGymSchedules(selectedDate, value);
+
+      // Update bookedslot state
+      setBookedSlot((prevBookedSlots) => [
+        ...prevBookedSlots,
+        {
+          masterID: slottime.ID,
+          start_time: slottime.start_time,
+          // add other necessary slot properties here
+        },
+      ]);
+
+      fetchGymSchedules(selectedDate, value); // Refresh schedules if needed
     } catch (error) {
       Alert.alert("Error", "Failed to book slot");
     } finally {
@@ -327,31 +335,25 @@ const HomeScreen = ({ navigation = {} }) => {
                 styles.slot,
                 {
                   borderColor: selectedTime === slot.time ? "#007367" : "#000",
-                  backgroundColor: slot.noAvailableSlots
+                  backgroundColor: slot.booked
+                    ? "#B0A4A4"
+                    : slot.noAvailableSlots && !slot.disabled
                     ? "#CF455C"
                     : !slot.disabled && selectedTime === slot.time
                     ? "#007367"
                     : slot.disabled
                     ? "transparent"
-                    : slot.booked
-                    ? "#B0A4A4"
                     : "#007367",
-
-                  // opacity:
-                  //   slot.disabled || slot.noAvailableSlots || slot.booked
-                  //     ? 0.5
-                  //     : 1,
                 },
               ]}
               disabled={slot.booked || slot.disabled || slot.noAvailableSlots}
             >
               <Text
                 style={{
-                  color: slot.noAvailableSlots
-                    ? "#ffff"
-                    : slot.booked || slot.disabled
-                    ? "#000"
-                    : "#fff",
+                  color:
+                    slot.booked || slot.disabled || slot.noAvailableSlots
+                      ? "#000"
+                      : "#fff",
                 }}
               >
                 {slot.time}

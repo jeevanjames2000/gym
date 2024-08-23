@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { SafeAreaView, StyleSheet, View, Text } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -10,38 +10,34 @@ import {
 } from "react-native-popup-menu";
 import HomeScreen from "./HomeScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import moment from "moment";
 
 const Home = ({ navigation }) => {
   const handleNavigate = (screenName) => {
     navigation.navigate(screenName);
   };
 
-  const convertTo24Hour = (time) => {
-    const [timePart, modifier] = time.split(" ");
-    let [hours, minutes] = timePart.split(":");
-    if (!hours || !minutes) return "00:00";
-    if (modifier === "PM" && hours !== "12") {
-      hours = parseInt(hours, 10) + 12;
-    } else if (modifier === "AM" && hours === "12") {
-      hours = "00";
-    }
-    return `${hours.toString().padStart(2, "0")}:${minutes}`;
-  };
+  const [expired, setExpired] = useState(false);
 
   const isExpired = (slot) => {
-    const currentDate = new Date();
+    const currentDate = moment();
     const dateStr = slot.start_date.split("T")[0];
     const endTimeStr = slot.end_time;
-    const endTime24Hour = convertTo24Hour(endTimeStr);
-    const endDateTime = new Date(`${dateStr}T${endTime24Hour}:00`);
-    return currentDate >= endDateTime;
+    const endDateTime = moment(
+      `${dateStr} ${endTimeStr}`,
+      "YYYY-MM-DD hh:mm A"
+    );
+    if (currentDate.isSameOrAfter(endDateTime)) {
+      setExpired(true);
+    }
+    return currentDate.isSameOrAfter(endDateTime);
   };
 
   const handleDelete = useCallback(async (slot) => {
     try {
       if (isExpired(slot)) {
         const token = await AsyncStorage.getItem("token");
-        await fetch(
+        const respone = await fetch(
           `https://sports1.gitam.edu/slot/gym/deleteGymBookingsByRegdNo`,
           {
             method: "DELETE",
@@ -103,7 +99,7 @@ const Home = ({ navigation }) => {
 
   useEffect(() => {
     fetchGymSchedules();
-  }, []);
+  }, [expired]);
 
   const handleLogout = async () => {
     const key = await AsyncStorage.getItem("myKey");

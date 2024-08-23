@@ -1,10 +1,22 @@
 import React from "react";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  DevSettings,
+} from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 
 const Network = () => {
   const navigation = useNavigation();
+
+  const handleRefresh = () => {
+    DevSettings.reload();
+    navigation.navigate("Login");
+  };
 
   return (
     <View style={styles.container}>
@@ -19,10 +31,7 @@ const Network = () => {
       <Text style={styles.subtitle}>
         Please check your internet settings and try again later.
       </Text>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("Login")}
-      >
+      <TouchableOpacity style={styles.button} onPress={handleRefresh}>
         <Text style={styles.buttonText}>Try again</Text>
       </TouchableOpacity>
     </View>

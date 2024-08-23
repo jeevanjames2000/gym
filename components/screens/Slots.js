@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import NotFound from "../errors/NotFound";
+import moment from "moment";
 
 const Slots = ({ navigation }) => {
   const [slotsData, setSlotsData] = useState([]);
@@ -23,23 +24,13 @@ const Slots = ({ navigation }) => {
   const isSameDate = useCallback((slot) => {
     const startDateStr = slot.start_date.split("T")[0];
     const startTimeStr = slot.start_time;
-
-    const convertTo24Hour = (time) => {
-      const [timePart, modifier] = time.split(" ");
-      let [hours, minutes] = timePart.split(":");
-      if (!hours || !minutes) return "00:00";
-      if (hours === "12") hours = "00";
-      if (modifier === "PM" && hours !== "00") hours = parseInt(hours, 10) + 12;
-      return `${hours.toString().padStart(2, "0")}:${minutes}`;
-    };
-
-    const startTime24Hour = convertTo24Hour(startTimeStr);
-    const startDateTime = new Date(`${startDateStr}T${startTime24Hour}:00`);
-    const oneHourBeforeStart = new Date(
-      startDateTime.getTime() - 60 * 60 * 1000
+    const startDateTime = moment(
+      `${startDateStr} ${startTimeStr}`,
+      "YYYY-MM-DD hh:mm A"
     );
-    const now = new Date();
-    return now < oneHourBeforeStart;
+    const oneHourBeforeStart = startDateTime.clone().subtract(1, "hours");
+    const now = moment();
+    return now.isBefore(oneHourBeforeStart);
   }, []);
 
   const fetchGymSchedules = useCallback(async () => {

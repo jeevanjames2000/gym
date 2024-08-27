@@ -299,17 +299,15 @@ const HomeScreen = ({ navigation = {} }) => {
       setStoreErr(responseData);
       setSlotConfirmationVisible(true);
 
-      // Update bookedslot state
       setBookedSlot((prevBookedSlots) => [
         ...prevBookedSlots,
         {
           masterID: slottime.ID,
           start_time: slottime.start_time,
-          // add other necessary slot properties here
         },
       ]);
 
-      fetchGymSchedules(selectedDate, value); // Refresh schedules if needed
+      fetchGymSchedules(selectedDate, value);
     } catch (error) {
       Alert.alert("Error", "Failed to book slot");
     } finally {
@@ -336,9 +334,9 @@ const HomeScreen = ({ navigation = {} }) => {
                 {
                   borderColor: selectedTime === slot.time ? "#007367" : "#000",
                   backgroundColor: slot.booked
-                    ? "#B0A4A4"
+                    ? "#cac8c8"
                     : slot.noAvailableSlots && !slot.disabled
-                    ? "#CF455C"
+                    ? "#f5a0a0"
                     : !slot.disabled && selectedTime === slot.time
                     ? "#007367"
                     : slot.disabled
@@ -346,7 +344,7 @@ const HomeScreen = ({ navigation = {} }) => {
                     : "#007367",
                 },
               ]}
-              disabled={slot.booked || slot.disabled || slot.noAvailableSlots}
+              disabled={slot.disabled || slot.noAvailableSlots}
             >
               <Text
                 style={{
@@ -409,9 +407,7 @@ const HomeScreen = ({ navigation = {} }) => {
             style={styles.maintenanceImage}
             resizeMode="contain"
           />
-          <Text style={styles.maintenanceText}>
-            This slot is under maintenance.
-          </Text>
+          <Text style={styles.maintenanceText}>Not Available</Text>
         </View>
       ) : (
         <>
@@ -574,13 +570,14 @@ const HomeScreen = ({ navigation = {} }) => {
                         { backgroundColor: "gray" },
                       ]}
                     />
-                    <Text style={styles.tooltipText}>Booked Slot</Text>
+                    <Text style={styles.tooltipText}>Recently Booked Slot</Text>
                   </View>
 
                   <View style={styles.tooltipRow}>
                     <View style={styles.circlePink} />
                     <Text style={styles.tooltipText}>Max Count Reached</Text>
                   </View>
+
                   {/* <View>
                     <Text
                       style={{
@@ -717,6 +714,7 @@ const HomeScreen = ({ navigation = {} }) => {
           </Modal>
         )}
       </View>
+
       {}
     </>
   );
@@ -1054,7 +1052,14 @@ const styles = StyleSheet.create({
     width: 17,
     height: 17,
     borderRadius: 5,
-    backgroundColor: "#CF455C",
+    backgroundColor: "#f5a0a0",
+    marginRight: 5,
+  },
+  circleYellow: {
+    width: 17,
+    height: 17,
+    borderRadius: 5,
+    backgroundColor: "#B0A565",
     marginRight: 5,
   },
   colorIndicator: {

@@ -76,58 +76,54 @@ const HomeScreen = ({ navigation = {} }) => {
     const state = await NetInfo.fetch();
     setIsConnected(state.isConnected);
   };
-  const fetchGymSchedules = async (date, location) => {
+
+  const [storage, setStorage] = useState(null);
+  const [bookedslot, setBookedSlot] = useState([]);
+
+  const fetchAllData = async (date, location) => {
     try {
       setIsLoading(true);
       setError(false);
+      const token = await AsyncStorage.getItem("token");
+
       const formattedDate = date.toISOString().split("T")[0];
-
-      const value = await AsyncStorage.getItem("token");
-
-      const response = await fetch(
+      const scheduleResponse = await fetch(
         `https://sports1.gitam.edu/api/gym/getGymSchedulesByLocation/${formattedDate}/${location}`,
         {
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${value}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
-      const data = await response.json();
 
-      if (data.length === 0) {
+      const scheduleData = await scheduleResponse.json();
+
+      if (scheduleData.length === 0) {
         setError(true);
-      } else {
-        const slots = data?.map((slot) => ({
-          ...slot,
-          masterID: slot.ID,
-          time: slot.start_time,
-          Gym_scheduling_id: slot.Gym_scheduling_id,
-          Access_type: slot.Access_type,
-          endTime: slot.end_time,
-          available: slot.available,
-          Location: slot.Location,
-          occupied: slot.occupied,
-          disabled: new Date(slot.start_time) <= new Date(),
-          noAvailableSlots: slot.available <= 0,
-        }));
-        setSlotsData(slots);
+        setIsLoading(false);
+        return;
       }
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      setError(true);
-    }
-  };
-  const [storage, setStorage] = useState(null);
-  const [bookedslot, setBookedSlot] = useState([]);
 
-  const fetchData = async () => {
-    try {
-      await fetchGymSchedules(selectedDate, value);
-      const token = await AsyncStorage.getItem("token");
+      const slots = scheduleData.map((slot) => ({
+        ...slot,
+        masterID: slot.ID,
+        time: slot.start_time,
+        Gym_scheduling_id: slot.Gym_scheduling_id,
+        Access_type: slot.Access_type,
+        endTime: slot.end_time,
+        available: slot.available,
+        Location: slot.Location,
+        occupied: slot.occupied,
+        disabled: new Date(slot.start_time) <= new Date(),
+        noAvailableSlots: slot.available <= 0,
+      }));
+
+      setSlotsData(slots);
+
       const storage = await AsyncStorage.getItem("myKey");
-      const response = await fetch(
+
+      const bookingResponse = await fetch(
         `https://sports1.gitam.edu/slot/gym/getGymBookingsByRegdNo/${storage}`,
         {
           headers: {
@@ -137,10 +133,10 @@ const HomeScreen = ({ navigation = {} }) => {
         }
       );
 
-      if (response.ok) {
-        const data = await response.json();
+      if (bookingResponse.ok) {
+        const bookingData = await bookingResponse.json();
 
-        const newSlots = data.map((slot) => ({
+        const newSlots = bookingData.map((slot) => ({
           start_time: slot.start_time,
           start_date: slot.start_date,
           regdNo: slot.regdNo,
@@ -152,6 +148,10 @@ const HomeScreen = ({ navigation = {} }) => {
         setBookedSlot(newSlots);
       }
 
+      if (!bookingResponse.ok) {
+        setBookedSlot([]);
+      }
+
       checkInternetAndNavigate();
     } catch (error) {
       setError(true);
@@ -159,6 +159,7 @@ const HomeScreen = ({ navigation = {} }) => {
       setIsLoading(false);
     }
   };
+
   useEffect(() => {
     const fetchData = async () => {
       const value = await AsyncStorage.getItem("myKey");
@@ -172,15 +173,14 @@ const HomeScreen = ({ navigation = {} }) => {
     checkInternetAndNavigate();
     fetchData();
   }, []);
-
   useEffect(() => {
     const handleFocus = () => {
-      fetchData();
-      fetchGymSchedules(selectedDate, value);
+      fetchAllData(selectedDate, value);
     };
 
     const unsubscribe = navigation.addListener("focus", handleFocus);
-    fetchData();
+
+    fetchAllData(selectedDate, value);
 
     return () => unsubscribe();
   }, [value, selectedDate, navigation]);
@@ -332,7 +332,7 @@ const HomeScreen = ({ navigation = {} }) => {
               style={[
                 styles.slot,
                 {
-                  borderColor: selectedTime === slot.time ? "#007367" : "#000",
+                  // borderColor: selectedTime === slot.time ? "#007367" : "#000",
                   backgroundColor: slot.booked
                     ? "#cac8c8"
                     : slot.noAvailableSlots && !slot.disabled
@@ -344,7 +344,7 @@ const HomeScreen = ({ navigation = {} }) => {
                     : "#007367",
                 },
               ]}
-              disabled={slot.disabled || slot.noAvailableSlots}
+              disabled={slot.disabled || slot.noAvailableSlots || slot.booked}
             >
               <Text
                 style={{

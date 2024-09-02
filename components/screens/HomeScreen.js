@@ -9,6 +9,7 @@ import {
   Image,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -394,6 +395,10 @@ const HomeScreen = ({ navigation = {} }) => {
     </View>
   );
 
+  const { width, height } = Dimensions.get("window");
+
+  const isTablet = width / height > 0.7 && width >= 600;
+
   const renderMainModal = () => (
     <View style={styles.modalContent}>
       <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
@@ -685,7 +690,13 @@ const HomeScreen = ({ navigation = {} }) => {
             onPress={closeModal}
           >
             <TouchableWithoutFeedback>
-              <View style={styles.modalContainer}>{renderMainModal()}</View>
+              <View
+                style={
+                  isTablet ? styles.tabletContainer : styles.modalContainer
+                }
+              >
+                {renderMainModal()}
+              </View>
             </TouchableWithoutFeedback>
           </TouchableOpacity>
         </Modal>
@@ -733,7 +744,6 @@ const styles = StyleSheet.create({
   loccard: {
     flex: 1,
     marginHorizontal: 5,
-    // height: 30,
     padding: 8,
     borderRadius: 5,
     alignItems: "center",
@@ -759,7 +769,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     alignItems: "center",
     justifyContent: "center",
+    width: "100%",
     marginTop: 20,
+    paddingHorizontal: 20,
   },
 
   selectedCard: {
@@ -767,7 +779,6 @@ const styles = StyleSheet.create({
   },
   cardText: {
     fontSize: 16,
-    // fontWeight: "500",
     color: "#333",
   },
 
@@ -920,10 +931,17 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     width: "85%",
+    maxHeight: "70%",
+  },
+  tabletContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    width: "55%",
     maxHeight: "80%",
   },
   modalContent: {
-    alignItems: "left",
+    alignItems: "flex-start",
   },
   closeButton: {
     width: 35,
@@ -945,6 +963,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 16,
   },
+
   detailsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -1076,15 +1095,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   tooltipContainer: {
     backgroundColor: "#fff",
     padding: 30,
     borderRadius: 8,
     elevation: 5,
-    // top: -80,
-    // left: 50,
   },
   disabledDateItem: {
     opacity: 1,

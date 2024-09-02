@@ -122,32 +122,33 @@ const Home = ({ navigation }) => {
   };
 
   return (
+    // <SafeAreaView style={styles.safearea}>
     <MenuProvider>
-      <SafeAreaView style={styles.safearea}>
-        <View style={styles.headerContainer}>
-          <View style={styles.header}>
-            <Text style={styles.headerText}>G-Gym</Text>
-            <Menu>
-              <MenuTrigger customStyles={triggerStyles}>
-                <Ionicons name="menu" size={35} color="#fff" />
-              </MenuTrigger>
-              <MenuOptions customStyles={optionsStyles}>
-                <MenuOption
-                  onSelect={() => handleNavigate("Booked Slots")}
-                  text="My Slots"
-                />
-                <MenuOption
-                  onSelect={() => handleNavigate("History")}
-                  text="History"
-                />
-                <MenuOption onSelect={handleLogout} text="Logout" />
-              </MenuOptions>
-            </Menu>
-          </View>
+      {/* safearea view is not working properly in ios ipad need to replace */}
+      <View style={styles.headerContainer}>
+        <View style={styles.header}>
+          <Text style={styles.headerText}>G-Gym</Text>
+          <Menu>
+            <MenuTrigger customStyles={triggerStyles}>
+              <Ionicons name="menu" size={35} color="#fff" />
+            </MenuTrigger>
+            <MenuOptions customStyles={optionsStyles}>
+              <MenuOption
+                onSelect={() => handleNavigate("Booked Slots")}
+                text="My Slots"
+              />
+              <MenuOption
+                onSelect={() => handleNavigate("History")}
+                text="History"
+              />
+              <MenuOption onSelect={handleLogout} text="Logout" />
+            </MenuOptions>
+          </Menu>
         </View>
-        <HomeScreen navigation={navigation} />
-      </SafeAreaView>
+      </View>
+      <HomeScreen navigation={navigation} />
     </MenuProvider>
+    // </SafeAreaView>
   );
 };
 

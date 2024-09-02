@@ -210,6 +210,10 @@ const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: "column",
     margin: 3,
+    zIndex: 1000,
+  },
+  dropdown: {
+    zIndex: 1000, // Ensure the dropdown itself is above the FlatList
   },
   card: {
     backgroundColor: "#fff",

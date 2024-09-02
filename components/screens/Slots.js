@@ -292,14 +292,16 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 20,
     right: 20,
+    borderRadius: 10,
+    overflow: "hidden",
   },
   updateText: {
     backgroundColor: "#007367",
     paddingVertical: 8,
     paddingHorizontal: 12,
     fontSize: 16,
-    borderRadius: 10,
     color: "#fff",
+    textAlign: "center",
   },
   boldText: {
     fontSize: 18,

@@ -17,7 +17,8 @@
     },
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/gitam-logo-circle.png"
+      "icon": "./assets/gitam-logo-circle.png",
+      "bundleIdentifier": "com.g-gym.com"
     },
     "android": {
       "adaptiveIcon": {

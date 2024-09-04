@@ -15,6 +15,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
       "supportsTablet": true,
       "icon": "./assets/gitam-logo-circle.png",

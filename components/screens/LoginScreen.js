@@ -9,14 +9,12 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Device from "expo-device";
 import NetInfo from "@react-native-community/netinfo";
 import Network from "../errors/Network";
 
 const LoginScreen = ({ navigation }) => {
-  const [username, setUsername] = useState("2023006357");
-  const [password, setPassword] = useState("Gitam@123");
-  const [deviceId, setDeviceId] = useState("154874551");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const storeData = async (data) => {
     try {
@@ -26,14 +24,6 @@ const LoginScreen = ({ navigation }) => {
     } catch (e) {}
   };
   const [isConnected, setIsConnected] = useState(true);
-
-  useEffect(() => {
-    const getDeviceId = async () => {
-      const id = Device.osBuildId;
-      // setDeviceId(id);
-    };
-    getDeviceId();
-  }, [isConnected]);
 
   const storeTokenInDatabase = async (data) => {
     try {
@@ -66,17 +56,19 @@ const LoginScreen = ({ navigation }) => {
 
   const handleLogin = async () => {
     try {
-      const response = await fetch("https://studentmobileapi.gitam.edu/Login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          UserName: username,
-          Password: password,
-          deviceid: deviceId,
-        }),
-      });
+      const response = await fetch(
+        "https://studentmobileapi.gitam.edu/Logingym",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            UserName: username,
+            Password: password,
+          }),
+        }
+      );
 
       const data = await response.json();
 
@@ -88,6 +80,7 @@ const LoginScreen = ({ navigation }) => {
         setError("Invalid Credentials");
       }
     } catch (error) {
+      console.log("error: ", error);
       checkInternetAndNavigate();
     }
   };
@@ -104,10 +97,12 @@ const LoginScreen = ({ navigation }) => {
     setPassword(text);
     if (error) setError(null);
   };
-  const handleDevicechange = (text) => {
-    setDeviceId(text);
-    if (error) setError(null);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible((prevState) => !prevState);
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.imageContainer}>
@@ -125,25 +120,28 @@ const LoginScreen = ({ navigation }) => {
           value={username}
           onChangeText={handleUsernameChange}
         />
-        <TextInput
-          style={[
-            error ? styles.errorfield : styles.passworcinput,
-            error ? styles.errorInput : null,
-          ]}
-          placeholder="Enter Password"
-          value={password}
-          secureTextEntry
-          onChangeText={handlePasswordChange}
-        />
-        <TextInput
-          style={[
-            error ? styles.errorfield : styles.passworcinput,
-            error ? styles.errorInput : null,
-          ]}
-          placeholder="Enter Device id"
-          value={deviceId}
-          onChangeText={handleDevicechange}
-        />
+        <View style={[styles.passwordContainer, error && styles.errorInput]}>
+          <TextInput
+            style={styles.passworcinput}
+            placeholder="Enter Password"
+            value={password}
+            secureTextEntry={!passwordVisible}
+            onChangeText={handlePasswordChange}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <TouchableOpacity
+            onPress={togglePasswordVisibility}
+            style={styles.iconContainer}
+          >
+            <Ionicons
+              name={passwordVisible ? "eye-off" : "eye"}
+              size={24}
+              color="#555"
+            />
+          </TouchableOpacity>
+        </View>
+
         {error && <Text style={styles.errorText}>{error}</Text>}
         <TouchableOpacity
           style={styles.button}
@@ -209,16 +207,29 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#fff",
   },
-  passworcinput: {
+  passwordContainer: {
     width: "100%",
     height: 60,
-    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 10,
+    paddingHorizontal: 10,
     backgroundColor: "#fff",
-    marginBottom: 20,
+    marginBottom: 15,
   },
+
+  passworcinput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+
+  iconContainer: {
+    padding: 10,
+  },
+
   errorfield: {
     width: "100%",
     height: 60,

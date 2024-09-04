@@ -128,7 +128,6 @@ const Slots = ({ navigation }) => {
             text: "OK",
             onPress: () => {
               handleDelete(slot);
-              // navigation.navigate("Home", { render: true });
             },
           },
         ],

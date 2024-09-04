@@ -300,15 +300,7 @@ const HomeScreen = ({ navigation = {} }) => {
       setStoreErr(responseData);
       setSlotConfirmationVisible(true);
 
-      setBookedSlot((prevBookedSlots) => [
-        ...prevBookedSlots,
-        {
-          masterID: slottime.ID,
-          start_time: slottime.start_time,
-        },
-      ]);
-
-      fetchGymSchedules(selectedDate, value);
+      fetchAllData(selectedDate, value);
     } catch (error) {
       Alert.alert("Error", "Failed to book slot");
     } finally {
@@ -333,12 +325,11 @@ const HomeScreen = ({ navigation = {} }) => {
               style={[
                 styles.slot,
                 {
-                  // borderColor: selectedTime === slot.time ? "#007367" : "#000",
                   backgroundColor: slot.booked
                     ? "#cac8c8"
                     : slot.noAvailableSlots && !slot.disabled
                     ? "#f5a0a0"
-                    : !slot.disabled && selectedTime === slot.time
+                    : selectedTime === slot.time && !slot.disabled
                     ? "#007367"
                     : slot.disabled
                     ? "transparent"
@@ -816,14 +807,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  fieldLabel: {
-    fontSize: 18,
-    margin: 10,
-  },
-  datePicker: {
-    flex: 1,
-    padding: 0,
-  },
   dateItem: {
     width: 50,
     alignItems: "center",
@@ -845,12 +828,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  dropdownContainer: {
-    flexDirection: "column",
-    alignItems: "left",
-    marginLeft: 0,
-    minWidth: 170,
-  },
   dropdown: {
     height: 40,
     minWidth: 120,
@@ -869,17 +846,10 @@ const styles = StyleSheet.create({
     marginTop: 15,
     zIndex: -1,
   },
-  scrollViewContent: {
-    paddingBottom: 20,
-  },
   slotRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 10,
-  },
-  slotContainer: {
-    flexDirection: "row",
-    flexWrap: "nowrap",
   },
   slot: {
     flex: 1,
@@ -889,9 +859,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,
-  },
-  slotText: {
-    fontSize: 16,
   },
   card: {
     marginBottom: 20,
@@ -909,17 +876,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontWeight: "500",
   },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkmark: {
-    color: "#ffff",
-  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -993,18 +950,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
   },
-  updateButton: {
-    backgroundColor: "#3498db",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    alignItems: "center",
-    borderRadius: 10,
-    margin: 5,
-  },
-  updateButtonText: {
-    color: "#fff",
-    fontSize: 16,
-  },
   slotConfirmationModal: {
     backgroundColor: "#fff",
     borderRadius: 10,
@@ -1012,19 +957,11 @@ const styles = StyleSheet.create({
     width: "80%",
     alignItems: "center",
   },
-  slotConfirmationText: {
-    fontSize: 18,
-    marginBottom: 20,
-  },
   okButton: {
     backgroundColor: "#007367",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
-  },
-  okButtonText: {
-    fontSize: 16,
-    color: "#fff",
   },
   loadingContainer: {
     flex: 1,
@@ -1047,6 +984,7 @@ const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 15,
   },
   title: {
     fontSize: 18,
@@ -1074,13 +1012,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#f5a0a0",
     marginRight: 5,
   },
-  circleYellow: {
-    width: 17,
-    height: 17,
-    borderRadius: 5,
-    backgroundColor: "#B0A565",
-    marginRight: 5,
-  },
+
   colorIndicator: {
     width: 17,
     height: 17,

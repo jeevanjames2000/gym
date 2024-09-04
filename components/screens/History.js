@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   dropdown: {
-    zIndex: 1000, // Ensure the dropdown itself is above the FlatList
+    zIndex: 1000,
   },
   card: {
     backgroundColor: "#fff",

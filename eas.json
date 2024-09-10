@@ -18,16 +18,14 @@
         "buildConfiguration": "Release"
       }
     },
-    "preview3": {
-      "developmentClient": true
-    },
-    "preview4": {
-      "distribution": "internal"
-    },
-    "production": {},
-    "simulator": {
+    "production": {}
+  },
+  "submit": {
+    "production": {
       "ios": {
-        "simulator": true
+        "appleId": "ios_developer@gitam.edu",
+        "ascAppId": "6670476298",
+        "appleTeamId": "5XLXV42GVV"
       }
     }
   }

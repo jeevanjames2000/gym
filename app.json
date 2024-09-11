@@ -2,7 +2,7 @@
   "expo": {
     "name": "G-Gym",
     "slug": "gym",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "jsEngine": "hermes",
     "orientation": "portrait",
     "icon": "./assets/gitam-logo-circle.png",

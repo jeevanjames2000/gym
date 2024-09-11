@@ -6,6 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -16,6 +20,7 @@ const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const storeData = async (data) => {
     try {
       await AsyncStorage.setItem("data", JSON.stringify(data));
@@ -48,13 +53,19 @@ const LoginScreen = ({ navigation }) => {
   const checkInternetAndNavigate = async () => {
     const state = await NetInfo.fetch();
     if (state.isConnected) {
-      handleLogin();
+      try {
+        handleLogin();
+      } catch (error) {
+        setError(error);
+      }
     } else {
       setIsConnected(false);
     }
   };
 
   const handleLogin = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch(
         "https://studentmobileapi.gitam.edu/Logingym",
@@ -72,7 +83,7 @@ const LoginScreen = ({ navigation }) => {
 
       const data = await response.json();
 
-      if (response.status === 200) {
+      if (response.status === 200 || response.ok) {
         await storeData(data);
         await storeTokenInDatabase(data);
         navigation.navigate("Home");
@@ -80,8 +91,9 @@ const LoginScreen = ({ navigation }) => {
         setError("Invalid Credentials");
       }
     } catch (error) {
-      console.log("error: ", error);
-      checkInternetAndNavigate();
+      setError("Internal server error");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -104,65 +116,86 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={require("../../assets/vecteezy_the-cheerful-healthy-people-run-for-exercise-happily-with_35041939.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-      <View style={styles.formContainer}>
-        <Text style={styles.loginText}>Login</Text>
-        <TextInput
-          style={[styles.input, error ? styles.errorInput : null]}
-          placeholder="Enter User ID"
-          value={username}
-          onChangeText={handleUsernameChange}
-        />
-        <View style={[styles.passwordContainer, error && styles.errorInput]}>
-          <TextInput
-            style={styles.passworcinput}
-            placeholder="Enter Password"
-            value={password}
-            secureTextEntry={!passwordVisible}
-            onChangeText={handlePasswordChange}
-            autoCapitalize="none"
-            autoCorrect={false}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      // keyboardVerticalOffset={0}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={require("../../assets/vecteezy_the-cheerful-healthy-people-run-for-exercise-happily-with_35041939.png")}
+            style={styles.logo}
+            resizeMode="contain"
           />
-          <TouchableOpacity
-            onPress={togglePasswordVisibility}
-            style={styles.iconContainer}
-          >
-            <Ionicons
-              name={passwordVisible ? "eye-off" : "eye"}
-              size={24}
-              color="#555"
+        </View>
+        <View style={styles.formContainer}>
+          <Text style={styles.loginText}>Login</Text>
+          <TextInput
+            style={[styles.input, error ? styles.errorInput : null]}
+            placeholder="Enter User ID"
+            value={username}
+            onChangeText={(text) => {
+              setUsername(text);
+              setError(null);
+            }}
+          />
+          <View style={[styles.passwordContainer, error && styles.errorInput]}>
+            <TextInput
+              style={styles.passworcinput}
+              placeholder="Enter Password"
+              value={password}
+              secureTextEntry={!passwordVisible}
+              onChangeText={(text) => {
+                setPassword(text);
+                setError(null);
+              }}
+              autoCapitalize="none"
+              autoCorrect={false}
             />
+            <TouchableOpacity
+              onPress={togglePasswordVisibility}
+              style={styles.iconContainer}
+            >
+              <Ionicons
+                name={passwordVisible ? "eye-off" : "eye"}
+                size={24}
+                color="#555"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {error && <Text style={styles.errorText}>{error}</Text>}
+          <TouchableOpacity
+            style={styles.button}
+            onPress={checkInternetAndNavigate}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#fff" />
+              </View>
+            ) : (
+              <>
+                <Text style={styles.buttonText}>Login</Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={24}
+                  color="#fff"
+                  style={styles.icon}
+                />
+              </>
+            )}
           </TouchableOpacity>
         </View>
-
-        {error && <Text style={styles.errorText}>{error}</Text>}
-        <TouchableOpacity
-          style={styles.button}
-          onPress={checkInternetAndNavigate}
-        >
-          <Text style={styles.buttonText}>Login</Text>
-          <Ionicons
-            name="arrow-forward"
-            size={24}
-            color="#fff"
-            style={styles.icon}
-          />
-        </TouchableOpacity>
-      </View>
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          Powered by Team{" "}
-          <Text style={styles.footerTextHighlight}>CATS, GITAM</Text>
-        </Text>
-      </View>
-    </View>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            Powered by Team{" "}
+            <Text style={styles.footerTextHighlight}>CATS, GITAM</Text>
+          </Text>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -170,9 +203,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "space-between",
-    alignItems: "center",
     padding: 20,
     backgroundColor: "#f2f2f2",
+  },
+  flexGrow: {
+    flexGrow: 1,
   },
   imageContainer: {
     flex: 1,
@@ -261,6 +296,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   footer: {
+    alignItems: "center",
     padding: 10,
   },
   footerText: {

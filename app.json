@@ -15,18 +15,22 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "ios": {
       "supportsTablet": true,
       "icon": "./assets/gitam-logo-circle.png",
-      "bundleIdentifier": "com.g-gym.com"
+      "bundleIdentifier": "com.g-gym.com",
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/gitam-logo-circle.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.jeevansekhar.gym"
+      "package": "com.jeevansekhar.gym",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -49,6 +53,12 @@
       "eas": {
         "projectId": "75369b66-078c-4788-85a8-12a0cdd0d224"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/75369b66-078c-4788-85a8-12a0cdd0d224"
     }
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import Network from "../errors/Network";
+import NotFound from "../errors/NotFound";
 
 const LoginScreen = ({ navigation }) => {
   const [username, setUsername] = useState("");
@@ -45,6 +46,10 @@ const LoginScreen = ({ navigation }) => {
           }),
         }
       );
+
+      if (!response.ok) {
+        <NotFound />;
+      }
     } catch (error) {
       <Network />;
     }
@@ -100,15 +105,7 @@ const LoginScreen = ({ navigation }) => {
   if (!isConnected) {
     return <Network />;
   }
-  const handleUsernameChange = (text) => {
-    setUsername(text);
-    if (error) setError(null);
-  };
 
-  const handlePasswordChange = (text) => {
-    setPassword(text);
-    if (error) setError(null);
-  };
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   const togglePasswordVisibility = () => {

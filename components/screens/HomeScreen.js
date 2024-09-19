@@ -573,22 +573,6 @@ const HomeScreen = ({ navigation = {} }) => {
                     <View style={styles.circlePink} />
                     <Text style={styles.tooltipText}>Max Count Reached</Text>
                   </View>
-
-                  {/* <View>
-                    <Text
-                      style={{
-                        color: "red",
-                        fontSize: 17,
-                        textAlign: "justify",
-                      }}
-                    >
-                      * Slots can only be updated up to 1 hour before the slot
-                      time!
-                    </Text>
-                    <Text style={{ color: "red", fontSize: 17 }}>
-                      * Only 2 slots allowed per day (AM & PM)
-                    </Text>
-                  </View> */}
                 </View>
               </TouchableOpacity>
             </Modal>

@@ -2,28 +2,28 @@
   "expo": {
     "name": "G-Gym",
     "slug": "gym",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "jsEngine": "hermes",
     "orientation": "portrait",
-    "icon": "./assets/gitam-logo-circle.png",
+    "icon": "./assets/GYM-icon.png",
     "userInterfaceStyle": "light",
     "packagerOpts": {
       "minify": true
     },
     "splash": {
-      "image": "./assets/gitam-logo-circle.png",
+      "image": "./assets/GYM-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/gitam-logo-circle.png",
+      "icon": "./assets/GYM-icon.png",
       "bundleIdentifier": "com.g-gym.com",
-      "buildNumber": "2"
+      "buildNumber": "3"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/gitam-logo-circle.png",
+        "foregroundImage": "./assets/GYM-icon.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.jeevansekhar.gym",
@@ -33,7 +33,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/GYM-icon.png"
     },
     "plugins": [
       "expo-router",

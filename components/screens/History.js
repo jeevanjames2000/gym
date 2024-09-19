@@ -130,18 +130,10 @@ const History = () => {
                   name={
                     item.attendance === "Present"
                       ? "checkmark-circle-outline"
-                      : // : item.attendance === "Pending"
-                        // ? "time-outline"
-                        "close-circle-outline"
+                      : "close-circle-outline"
                   }
                   size={20}
-                  color={
-                    item.attendance === "Present"
-                      ? "green"
-                      : // : item.attendance === "Pending"
-                        // ? "orange"
-                        "red"
-                  }
+                  color={item.attendance === "Present" ? "green" : "red"}
                 />
                 <Text
                   style={

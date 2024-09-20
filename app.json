@@ -27,6 +27,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.jeevansekhar.gym",
+      "versionCode": 1,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"

@@ -1,3 +1,4 @@
+import React, { useEffect, useState, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -8,8 +9,76 @@ import Slots from "./components/screens/Slots";
 import History from "./components/screens/History";
 import NotFound from "./components/errors/NotFound";
 import Network from "./components/errors/Network";
+import { Image, ActivityIndicator, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
 
 const Stack = createNativeStackNavigator();
+
+const SplashScreen = ({ navigation }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
+  const checkSession = useCallback(async () => {
+    try {
+      const sessionData = JSON.parse(await AsyncStorage.getItem("userSession"));
+
+      if (!sessionData) {
+        navigation.navigate("Login");
+      } else {
+        const { sessionExpiry } = sessionData;
+        const currentTime = new Date().getTime();
+
+        if (currentTime > sessionExpiry) {
+          await AsyncStorage.removeItem("userSession");
+          navigation.navigate("Login", {
+            message: "Session expired, please log in again.",
+          });
+        } else {
+          navigation.navigate("Home");
+        }
+      }
+    } catch (error) {
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigation]);
+
+  useEffect(() => {
+    checkSession();
+  }, [checkSession]);
+
+  if (isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "white",
+        }}
+      >
+        <Image
+          source={require("./assets/GYM-splash.png")}
+          style={{
+            width: "100%",
+            height: "80%",
+            backgroundColor: "transparent",
+          }}
+          resizeMode="contain"
+        />
+        <ActivityIndicator
+          size="large"
+          color="black"
+          style={{
+            marginTop: 20,
+          }}
+        />
+      </View>
+    );
+  }
+
+  return null;
+};
 
 export default function App() {
   return (
@@ -26,6 +95,11 @@ export default function App() {
           },
         }}
       >
+        <Stack.Screen
+          name="Splash"
+          component={SplashScreen}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="Login"
           component={LoginScreen}
@@ -62,6 +136,7 @@ export default function App() {
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
+      <Toast />
     </NavigationContainer>
   );
 }

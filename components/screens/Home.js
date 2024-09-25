@@ -115,6 +115,7 @@ const Home = ({ navigation }) => {
     });
     if (response.ok) {
       handleNavigate("Login");
+      AsyncStorage.removeItem("userSession");
       AsyncStorage.removeItem("Bookedslot");
     } else {
       handleNavigate("Login");

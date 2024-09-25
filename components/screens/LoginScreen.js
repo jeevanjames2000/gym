@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -16,14 +16,36 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import Network from "../errors/Network";
 import NotFound from "../errors/NotFound";
+import Toast from "react-native-toast-message";
 
-const LoginScreen = ({ navigation }) => {
+const LoginScreen = ({ route, navigation }) => {
+  const { message } = route.params || {};
+
+  useEffect(() => {
+    if (message) {
+      Toast.show({
+        text1: message,
+        type: "error",
+        position: "top",
+        swipeable: true,
+        keyboardOffset: 10,
+        bottomOffset: 10,
+      });
+    }
+  }, [message]);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const storeData = async (data) => {
     try {
+      const sessionExpiry = new Date().getTime() + 3600 * 1000;
+      const sessionData = {
+        token: data.token,
+        regdno: data.stdprofile[0].regdno,
+        sessionExpiry,
+      };
+      await AsyncStorage.setItem("userSession", JSON.stringify(sessionData));
       await AsyncStorage.setItem("data", JSON.stringify(data));
       await AsyncStorage.setItem("myKey", data.stdprofile[0].regdno);
       await AsyncStorage.setItem("token", data.token);

@@ -12,6 +12,7 @@
     },
     "preview2": {
       "android": {
+        "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
       },
       "ios": {

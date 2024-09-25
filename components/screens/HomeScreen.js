@@ -36,6 +36,7 @@ const HomeScreen = ({ navigation = {} }) => {
     { label: "Block-C", value: "Block-C" },
     { label: "Girls Hostel", value: "Girls Hostel" },
     { label: "Campus", value: "Campus" },
+    { label: "BLR GYM", value: "BLR" },
   ];
   const [filteredItems, setFilteredItems] = useState([]);
 
@@ -48,7 +49,6 @@ const HomeScreen = ({ navigation = {} }) => {
             setValue("GYM");
             return item.value === "GYM";
           case "HYD":
-          case "BLR":
             if (gender === "M") {
               setValue("Block-C");
               return item.value === "Block-C" || item.value === "Campus";
@@ -58,11 +58,15 @@ const HomeScreen = ({ navigation = {} }) => {
               item.value === "Girls Hostel" ||
               item.value === "Campus"
             );
+          case "BLR":
+            setValue("BLR");
+            return item.value === "BLR";
           default:
             return gender === "M"
               ? item.value === "GYM" ||
                   item.value === "Block-C" ||
-                  item.value === "Campus"
+                  item.value === "Campus" ||
+                  item.value === "BLR"
               : true;
         }
       });
@@ -166,6 +170,7 @@ const HomeScreen = ({ navigation = {} }) => {
       const value = await AsyncStorage.getItem("myKey");
       const data = await AsyncStorage.getItem("data");
       const parsedData = JSON.parse(data);
+
       filterItems(parsedData);
       if (value !== null) {
         setStorage(value);

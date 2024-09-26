@@ -117,6 +117,9 @@ const Home = ({ navigation }) => {
       handleNavigate("Login");
       AsyncStorage.removeItem("userSession");
       AsyncStorage.removeItem("Bookedslot");
+      AsyncStorage.removeItem("data", JSON.stringify(data));
+      AsyncStorage.removeItem("myKey", data.stdprofile[0].regdno);
+      AsyncStorage.removeItem("token", data.token);
     } else {
       handleNavigate("Login");
     }

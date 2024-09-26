@@ -30,6 +30,10 @@ const SplashScreen = ({ navigation }) => {
 
         if (currentTime > sessionExpiry) {
           await AsyncStorage.removeItem("userSession");
+          await AsyncStorage.removeItem("Bookedslot");
+          await AsyncStorage.removeItem("data", JSON.stringify(data));
+          await AsyncStorage.removeItem("myKey", data.stdprofile[0].regdno);
+          await AsyncStorage.removeItem("token", data.token);
           navigation.navigate("Login", {
             message: "Session expired, please log in again.",
           });

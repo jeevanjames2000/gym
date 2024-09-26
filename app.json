@@ -2,7 +2,7 @@
   "expo": {
     "name": "G-Gym",
     "slug": "gym",
-    "version": "1.2.1",
+    "version": "1.2.2",
     "jsEngine": "hermes",
     "orientation": "portrait",
     "icon": "./assets/Gym-icon.png",
@@ -19,7 +19,7 @@
       "supportsTablet": true,
       "icon": "./assets/Gym-icon.png",
       "bundleIdentifier": "com.g-gym.com",
-      "buildNumber": "4"
+      "buildNumber": "5"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,7 +27,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.jeevansekhar.gym",
-      "versionCode": 1,
+      "versionCode": 2,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"

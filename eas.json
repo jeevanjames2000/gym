@@ -2,7 +2,6 @@
   "build": {
     "preview": {
       "android": {
-        "developmentClient": true,
         "resourceClass": "medium"
       },
       "ios": {

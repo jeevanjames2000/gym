@@ -30,63 +30,51 @@ const HomeScreen = ({ navigation = {} }) => {
   const [resLoading, setResLoading] = useState(false);
   const [isSlotConfirmationVisible, setSlotConfirmationVisible] =
     useState(false);
-  const [value, setValue] = useState(null);
+  const [value, setValue] = useState("Block-C");
+
   const items = [
     { label: "Gym", value: "GYM" },
     { label: "Block-C", value: "Block-C" },
     { label: "Girls Hostel", value: "Girls Hostel" },
     { label: "Campus", value: "Campus" },
-    { label: "BLR GYM", value: "BLR" },
+    { label: "BLR", value: "BLR" },
   ];
+
   const [filteredItems, setFilteredItems] = useState([]);
 
   const filterItems = useCallback(
     (data) => {
       const { gender, campus } = data.stdprofile[0];
-      let filtered = [];
-      let selectedValue = value;
-
-      switch (campus) {
-        case "VSP":
-          filtered = items.filter((item) => item.value === "GYM");
-          selectedValue = "GYM";
-          break;
-        case "HYD":
-          if (gender === "M") {
-            filtered = items.filter(
-              (item) => item.value === "Block-C" || item.value === "Campus"
+      let filtered = items.filter((item) => {
+        switch (campus) {
+          case "VSP":
+            setValue("GYM");
+            return item.value === "GYM";
+          case "HYD":
+            if (gender === "M") {
+              setValue("Block-C");
+              return item.value === "Block-C" || item.value === "Campus";
+            }
+            setValue("Girls Hostel");
+            return (
+              item.value === "Block-C" ||
+              item.value === "Girls Hostel" ||
+              item.value === "Campus"
             );
-            selectedValue = "Block-C";
-          } else {
-            filtered = items.filter(
-              (item) =>
-                item.value === "Block-C" ||
-                item.value === "Girls Hostel" ||
-                item.value === "Campus"
-            );
-            selectedValue = "Girls Hostel";
-          }
-          break;
-        case "BLR":
-          filtered = items.filter((item) => item.value === "BLR");
-          selectedValue = "BLR";
-          break;
-        default:
-          filtered = items.filter((item) =>
-            gender === "M"
+          case "BLR":
+            setValue("BLR");
+            return item.value === "BLR";
+          default:
+            return gender === "M"
               ? item.value === "GYM" ||
-                item.value === "Block-C" ||
-                item.value === "Campus" ||
-                item.value === "BLR"
-              : true
-          );
-          selectedValue = gender === "M" ? "GYM" : "Girls Hostel";
-      }
-
+                  item.value === "Block-C" ||
+                  item.value === "Campus"
+              : true;
+        }
+      });
       setFilteredItems(filtered);
-      setValue(selectedValue);
     },
-    [items, value]
+    [items]
   );
 
   const [isConnected, setIsConnected] = useState(true);
@@ -184,7 +172,6 @@ const HomeScreen = ({ navigation = {} }) => {
       const value = await AsyncStorage.getItem("myKey");
       const data = await AsyncStorage.getItem("data");
       const parsedData = JSON.parse(data);
-
       filterItems(parsedData);
       if (value !== null) {
         setStorage(value);

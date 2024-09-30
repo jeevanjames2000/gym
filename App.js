@@ -9,82 +9,31 @@ import Slots from "./components/screens/Slots";
 import History from "./components/screens/History";
 import NotFound from "./components/errors/NotFound";
 import Network from "./components/errors/Network";
-import { Image, ActivityIndicator, View } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+import SplashScreen from "./components/screens/SplashScreen";
+import * as Updates from "expo-updates";
 
 const Stack = createNativeStackNavigator();
 
-const SplashScreen = ({ navigation }) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  const checkSession = useCallback(async () => {
+export default function App() {
+  async function onFetchUpdateAsync() {
     try {
-      const sessionData = JSON.parse(await AsyncStorage.getItem("userSession"));
-
-      if (!sessionData) {
-        navigation.navigate("Login");
-      } else {
-        const { sessionExpiry } = sessionData;
-        const currentTime = new Date().getTime();
-
-        if (currentTime > sessionExpiry) {
-          await AsyncStorage.removeItem("userSession");
-          await AsyncStorage.removeItem("Bookedslot");
-          await AsyncStorage.removeItem("data", JSON.stringify(data));
-          await AsyncStorage.removeItem("myKey", data.stdprofile[0].regdno);
-          await AsyncStorage.removeItem("token", data.token);
-          navigation.navigate("Login", {
-            message: "Session expired, please log in again.",
-          });
-        } else {
-          navigation.navigate("Home");
-        }
+      const update = await Updates.checkForUpdateAsync();
+      if (update.isAvailable) {
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
       }
     } catch (error) {
-    } finally {
-      setIsLoading(false);
+      // You can also add an alert() here if needed for your purposes
+      console.log(`Error fetching latest Expo update: ${error}`);
     }
-  }, [navigation]);
-
-  useEffect(() => {
-    checkSession();
-  }, [checkSession]);
-
-  if (isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "white",
-        }}
-      >
-        <Image
-          source={require("./assets/GYM-splash.png")}
-          style={{
-            width: "100%",
-            height: "80%",
-            backgroundColor: "transparent",
-          }}
-          resizeMode="contain"
-        />
-        <ActivityIndicator
-          size="large"
-          color="black"
-          style={{
-            marginTop: 20,
-          }}
-        />
-      </View>
-    );
   }
 
-  return null;
-};
-
-export default function App() {
+  useEffect(() => {
+    if (!__DEV__) {
+      onFetchUpdateAsync();
+    }
+  }, []);
   return (
     <NavigationContainer>
       <StatusBar style="auto" />
@@ -100,7 +49,7 @@ export default function App() {
         }}
       >
         <Stack.Screen
-          name="Splash"
+          name="SplashScreen"
           component={SplashScreen}
           options={{ headerShown: false }}
         />

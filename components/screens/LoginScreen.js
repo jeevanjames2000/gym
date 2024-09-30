@@ -17,16 +17,14 @@ import NetInfo from "@react-native-community/netinfo";
 import Network from "../errors/Network";
 import NotFound from "../errors/NotFound";
 import Toast from "react-native-toast-message";
-
 const LoginScreen = ({ route, navigation }) => {
   const { message } = route.params || {};
-
   useEffect(() => {
     if (message) {
       Toast.show({
         text1: message,
         type: "error",
-        position: "top",
+        position: "bottom",
         swipeable: true,
         keyboardOffset: 10,
         bottomOffset: 10,
@@ -39,21 +37,14 @@ const LoginScreen = ({ route, navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const storeData = async (data) => {
     try {
-      const sessionExpiry = new Date().getTime() + 3600 * 1000;
-      const sessionData = {
-        token: data.token,
-        regdno: data.stdprofile[0].regdno,
-        sessionExpiry,
-      };
-      await AsyncStorage.setItem("userSession", JSON.stringify(sessionData));
       await AsyncStorage.setItem("data", JSON.stringify(data));
       await AsyncStorage.setItem("myKey", data.stdprofile[0].regdno);
-      await AsyncStorage.setItem("token", data.token);
     } catch (e) {}
   };
   const [isConnected, setIsConnected] = useState(true);
-
   const storeTokenInDatabase = async (data) => {
+    const data2 = { ...data.stdprofile[0] };
+
     try {
       const response = await fetch(
         "https://sports1.gitam.edu/auth/storeToken",
@@ -63,12 +54,19 @@ const LoginScreen = ({ route, navigation }) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            token: data.token,
-            regdno: data.stdprofile[0].regdno,
+            mobile: data2.mobile,
+            hostler: data2.hostler,
+            gender: data2.gender,
+            campus: data2.campus,
+            name: data2.name,
+            regdno: data2.regdno,
           }),
         }
       );
-
+      const data = await response.json();
+      if (response.ok) {
+        await AsyncStorage.setItem("token", data.token);
+      }
       if (!response.ok) {
         <NotFound />;
       }
@@ -76,7 +74,6 @@ const LoginScreen = ({ route, navigation }) => {
       <Network />;
     }
   };
-
   const checkInternetAndNavigate = async () => {
     const state = await NetInfo.fetch();
     if (state.isConnected) {
@@ -89,7 +86,6 @@ const LoginScreen = ({ route, navigation }) => {
       setIsConnected(false);
     }
   };
-
   const handleLogin = async () => {
     setIsLoading(true);
     setError(null);
@@ -107,9 +103,7 @@ const LoginScreen = ({ route, navigation }) => {
           }),
         }
       );
-
       const data = await response.json();
-
       if (response.status === 200 || response.ok) {
         await storeData(data);
         await storeTokenInDatabase(data);
@@ -123,22 +117,17 @@ const LoginScreen = ({ route, navigation }) => {
       setIsLoading(false);
     }
   };
-
   if (!isConnected) {
     return <Network />;
   }
-
   const [passwordVisible, setPasswordVisible] = useState(false);
-
   const togglePasswordVisibility = () => {
     setPasswordVisible((prevState) => !prevState);
   };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      // keyboardVerticalOffset={0}
     >
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
         <View style={styles.imageContainer}>
@@ -183,7 +172,6 @@ const LoginScreen = ({ route, navigation }) => {
               />
             </TouchableOpacity>
           </View>
-
           {error && <Text style={styles.errorText}>{error}</Text>}
           <TouchableOpacity
             style={styles.button}
@@ -217,7 +205,6 @@ const LoginScreen = ({ route, navigation }) => {
     </KeyboardAvoidingView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -273,17 +260,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginBottom: 15,
   },
-
   passworcinput: {
     flex: 1,
     paddingVertical: 12,
     fontSize: 16,
   },
-
   iconContainer: {
     padding: 10,
   },
-
   errorfield: {
     width: "100%",
     height: 60,
@@ -336,5 +320,4 @@ const styles = StyleSheet.create({
     textAlign: "left",
   },
 });
-
 export default LoginScreen;

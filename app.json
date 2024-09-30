@@ -2,7 +2,7 @@
   "expo": {
     "name": "G-Gym",
     "slug": "gym",
-    "version": "1.2.2",
+    "version": "1.2.4",
     "jsEngine": "hermes",
     "orientation": "portrait",
     "icon": "./assets/Gym-icon.png",
@@ -19,7 +19,7 @@
       "supportsTablet": true,
       "icon": "./assets/Gym-icon.png",
       "bundleIdentifier": "com.g-gym.com",
-      "buildNumber": "5"
+      "buildNumber": "7"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,7 +27,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.jeevansekhar.gym",
-      "versionCode": 2,
+      "versionCode": 5,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
@@ -45,6 +45,12 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
+      ],
+      [
+        "expo-updates",
+        {
+          "username": "jeevansekhar"
+        }
       ]
     ],
     "extra": {
@@ -59,7 +65,10 @@
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/75369b66-078c-4788-85a8-12a0cdd0d224"
+      "url": "https://u.expo.dev/75369b66-078c-4788-85a8-12a0cdd0d224",
+      "enabled": true,
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD"
     }
   }
 }

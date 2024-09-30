@@ -1,6 +1,7 @@
 {
   "build": {
     "preview": {
+      "channel": "preview",
       "android": {
         "resourceClass": "medium"
       },
@@ -11,14 +12,25 @@
     },
     "preview2": {
       "android": {
+        "developmentClient": true,
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
       },
       "ios": {
         "buildConfiguration": "Release"
-      }
+      },
+      "channel": "preview2"
     },
-    "production": {}
+    "production": {
+      "channel": "production",
+      "android": {
+        "resourceClass": "medium"
+      },
+      "ios": {
+        "buildConfiguration": "Release",
+        "resourceClass": "medium"
+      }
+    }
   },
   "submit": {
     "production": {

@@ -17,7 +17,7 @@ import NetInfo from "@react-native-community/netinfo";
 import moment from "moment";
 import Network from "../errors/Network";
 
-const HomeScreen = ({ navigation = {} }) => {
+const HomeScreen = ({ navigation = {}, campus, gender }) => {
   const [selectedDate, setSelectedDate] = useState(moment());
   const [dates, setDates] = useState([]);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -42,40 +42,37 @@ const HomeScreen = ({ navigation = {} }) => {
 
   const [filteredItems, setFilteredItems] = useState([]);
 
-  const filterItems = useCallback(
-    (data) => {
-      const { gender, campus } = data.stdprofile[0];
-      let filtered = items.filter((item) => {
-        switch (campus) {
-          case "VSP":
-            setValue("GYM");
-            return item.value === "GYM";
-          case "HYD":
-            if (gender === "M") {
-              setValue("Block-C");
-              return item.value === "Block-C" || item.value === "Campus";
-            }
-            setValue("Girls Hostel");
-            return (
-              item.value === "Block-C" ||
-              item.value === "Girls Hostel" ||
-              item.value === "Campus"
-            );
-          case "BLR":
-            setValue("BLR");
-            return item.value === "BLR";
-          default:
-            return gender === "M"
-              ? item.value === "GYM" ||
-                  item.value === "Block-C" ||
-                  item.value === "Campus"
-              : true;
-        }
-      });
-      setFilteredItems(filtered);
-    },
-    [items]
-  );
+  const filterItems = (campus, gender) => {
+    // const { gender, campus } = data.stdprofile[0];
+    let filtered = items.filter((item) => {
+      switch (campus) {
+        case "VSP":
+          setValue("GYM");
+          return item.value === "GYM";
+        case "HYD":
+          if (gender === "M") {
+            setValue("Block-C");
+            return item.value === "Block-C" || item.value === "Campus";
+          }
+          setValue("Girls Hostel");
+          return (
+            item.value === "Block-C" ||
+            item.value === "Girls Hostel" ||
+            item.value === "Campus"
+          );
+        case "BLR":
+          setValue("BLR");
+          return item.value === "BLR";
+        default:
+          return gender === "M"
+            ? item.value === "GYM" ||
+                item.value === "Block-C" ||
+                item.value === "Campus"
+            : true;
+      }
+    });
+    setFilteredItems(filtered);
+  };
 
   const [isConnected, setIsConnected] = useState(true);
 
@@ -170,16 +167,14 @@ const HomeScreen = ({ navigation = {} }) => {
   useEffect(() => {
     const fetchData = async () => {
       const value = await AsyncStorage.getItem("myKey");
-      const data = await AsyncStorage.getItem("data");
-      const parsedData = JSON.parse(data);
-      filterItems(parsedData);
+      filterItems(campus, gender);
       if (value !== null) {
         setStorage(value);
       }
     };
     checkInternetAndNavigate();
     fetchData();
-  }, []);
+  }, [campus, gender, navigation]);
   useEffect(() => {
     const handleFocus = () => {
       fetchAllData(selectedDate, value);

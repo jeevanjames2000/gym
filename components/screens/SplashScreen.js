@@ -32,7 +32,10 @@ export default function SplashScreen({ navigation }) {
         }, 2000);
       } else {
         setTimeout(() => {
-          navigation.navigate("Home");
+          navigation.navigate("Home", {
+            campus: decoded.campus,
+            gender: decoded.gender,
+          });
         }, 2000);
       }
     } catch (error) {

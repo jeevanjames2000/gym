@@ -12,7 +12,9 @@ import HomeScreen from "./HomeScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 
-const Home = ({ navigation }) => {
+const Home = ({ route, navigation }) => {
+  const { campus, gender } = route.params;
+
   const handleNavigate = (screenName) => {
     navigation.navigate(screenName);
   };
@@ -150,7 +152,7 @@ const Home = ({ navigation }) => {
           </Menu>
         </View>
       </View>
-      <HomeScreen navigation={navigation} />
+      <HomeScreen navigation={navigation} campus={campus} gender={gender} />
     </MenuProvider>
     // </SafeAreaView>
   );

@@ -107,7 +107,8 @@ const LoginScreen = ({ route, navigation }) => {
       if (response.status === 200 || response.ok) {
         await storeData(data);
         await storeTokenInDatabase(data);
-        navigation.navigate("Home");
+        const data2 = { ...data.stdprofile[0] };
+        navigation.navigate("Home", { campus: data2.campus });
       } else {
         setError("Invalid Credentials");
       }
